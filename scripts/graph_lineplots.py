@@ -3,8 +3,9 @@ import seaborn as sns
 import numpy as np 
 import matplotlib.pyplot as plt
 
-sim_data = pd.read_csv("../results/total_all_comps_sim.csv")
-wide_sim_data = pd.read_csv("../results/sim_one.csv")
+sim_data = pd.read_csv("total_mean_values.csv")
+#wide_sim_data = pd.read_csv("/results/sim_one.csv")
+wide_sim_quantile_data = pd.read_csv("total_sim_vax_level_quantile_10.csv")
 #print("I1 : ",max(sim_data["I1"]))
 #print("I2 : ",max(sim_data["I2"]))
 #print("XSi1 : ",max(sim_data["XSi1"]))
@@ -12,6 +13,11 @@ wide_sim_data = pd.read_csv("../results/sim_one.csv")
 #print("VI1 : ",max(sim_data["VI1"]))
 #print("VI2 : ",max(sim_data["VI2"]))
 #print("N : ",max(sim_data["N"]))
-#infected_data = wide_sim_data.query('vartype == "VI1 \n1"')
-sns.lineplot(data=sim_data,x="t",y="value",hue="vartype")
+valueX1 = "Xsi1"
+valueX2 = "Xsi2"
+print(sim_data['vartype'])
+infected_data = sim_data.query('vartype == @valueX1')
+#sns.lineplot(data=infected_data,x="t",y="value",hue="vartype")
+g = sns.FacetGrid(infected_data,col="vv",height=2.5,col_wrap=3)
+g.map(sns.lineplot,"t","value")
 plt.show()
