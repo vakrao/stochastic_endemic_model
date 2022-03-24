@@ -18,12 +18,15 @@ valueX2 = "Xsi2"
 valueD = "XD"
 print(sim_data['vartype'])
 infected_data = sim_data.query('vartype == @valueX1')
+infected_data["rolling"] =infected_data["value"].rolling(window=7).sum()
 death_data = sim_data.query('vartype == @valueD')
+death_data["rolling"] =death_data["value"].rolling(window=7).sum()
 #sns.lineplot(data=infected_data,x="t",y="value",hue="vartype")
 g = sns.FacetGrid(infected_data,col="vv",height=2.5,col_wrap=3)
 g2 = sns.FacetGrid(death_data,col="vv",height=2.5,col_wrap=3)
-g.map(sns.lineplot,"t","value")
+
+g.map(sns.lineplot,"t","rolling")
 g.set(ylim=(0,20000))
-g2.map(sns.lineplot,"t","value")
+g2.map(sns.lineplot,"t","rolling")
 #g2.set(ylim=(0,20000))
 plt.show()

@@ -480,20 +480,12 @@ void stoch_model(double vv, int run_number,char* fileName){
                 Xvvi2[i] = 0;
             }
 
-            if(V[i] - Vs[i] - Xvvi1[i] - Xvvi2[i]>= 1){
-                temp_transition = V[i] - Vs[i] - Xvvi1[i] - Xvvi2[i];
-                DVi2[i] = poisson_draw(temp_transition * mu_i1[i],temp_transition);
-            }
-            else{
-                DVi2[i] = 0;
-            }
-
             if(V[i] - Vs[i] - Xvvi1[i] - Xvvi2[i] - DVi2[i] >= 1){
                 temp_transition = V[i] - Vs[i] - Xvvi1[i] - Xvvi2[i] - DVi2[i];
-                VI2D[i] = poisson_draw(temp_transition * mu_i2[i],temp_transition);
+                VD[i] = poisson_draw(temp_transition * mu_i2[i],temp_transition);
             }
             else{
-                VI2D[i] = 0;
+                VD[i] = 0;
             }
 
             if(I1[i] >= 1){
@@ -578,7 +570,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             if(VI1[i] - YV1[i] - theta3[i] >= 1){
                 temp_transition = (VI1[i] - YV1[i] - theta3[i] );
-                DVi1[i] = poisson_draw(temp_transition*theta[i]*(1-sigma_d1)*gamma,temp_transition);
+                DVi1[i] = poisson_draw(temp_transition*(1-sigma_d1)*gamma,temp_transition);
             }
             else{
                 DVi1[i] = 0;
