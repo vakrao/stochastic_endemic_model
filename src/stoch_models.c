@@ -247,8 +247,6 @@ void stoch_model(double vv, int run_number,char* fileName){
     read_contact_matrices(AGES, overall_ile,cm_overall);
     int couner = 0;
     
-    //fprintf(stderr,"entering AGE! \n");
-    //fflush(stderr);
     for(int i = 0; i < AGES; i++){
 //        theta[i] = (1/ti_icu)*ICU_raio[i];
         theta[i] = 0;
