@@ -3,9 +3,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+#include <omp.h>
 #include "helpers.h"
 #include "initparams.h"
-#include "helpers.h"
 #include<gsl/gsl_randist.h>  
 #include<gsl/gsl_rng.h>  
 
@@ -29,8 +29,8 @@ void stoch_model(double vv, int run_number,char* fileName){
     const double sigma_red_i1= 0.5;
     const double sigma_red_i2= 0.5;
     //vaccine protection against infection 
-    const double sigma_i1 = 0.8;
-    const double sigma_i2 = 0.8;
+    const double sigma_i1 = 0.5;
+    const double sigma_i2 = 0.4;
     //vaccine protection against hosptilaization 
     const double sigma_h1 = 0.9; 
     const double sigma_h2 = 0.9; 
@@ -38,13 +38,13 @@ void stoch_model(double vv, int run_number,char* fileName){
     const double sigma_d1 = 0.95; 
     const double sigma_d2 = 0.95; 
     const double C1 = 0.5;
-    const double C2 = 0.95;
+    const double C2 = 0.9;
     const int years = 20; 
-    const double zeta = 0.45;
-    const double ti_icu = 3;
+    const double zeta = 0.125;
+    const double ti_icu = 8;
     const int ft = years*365;
-    const double VC1 = 0.8; 
-    const double VC2 = 0.8;
+    const double VC1 = 0.5; 
+    const double VC2 = 0.9;
     const double variant_start = 300;
     const double R01 = 5; 
     const double gamma = 0.1587;
@@ -247,14 +247,15 @@ void stoch_model(double vv, int run_number,char* fileName){
     read_contact_matrices(AGES, overall_ile,cm_overall);
     int couner = 0;
     
+    // Setting values for theta, mu, and m
     for(int i = 0; i < AGES; i++){
-//        theta[i] = (1/ti_icu)*ICU_raio[i];
         theta[i] = 0;
         mu_i1[i] = mu_i1[i] / 1000.0;
         mu_i2[i] = mu_i2[i] * ifr_i2_scale;
         m[i] = m[i] / 365.0;
         m[i] = m[i] * 5.0;
     }
+    // Age-based loop for setting all transition values to zero
     for(int c = 0; c < AGES; c++){
         M[c] = (double*) malloc(AGES*sizeof(double));
         S[c] = N[c];
@@ -352,6 +353,7 @@ void stoch_model(double vv, int run_number,char* fileName){
     int rand_number = 0;
     //Time loop starts here
     while(t < ft){
+	//Variant if-statement loop!
         if(t == variant_start){
             R02 = variant_start_R02;
             //To ADD: add new 100 imports ditributed across all ages
@@ -380,7 +382,6 @@ void stoch_model(double vv, int run_number,char* fileName){
         }
 
         // Ageing Loop
-
         if(t % 365 == 0  & t != 0){
           S = ageing(S, AGES);
           I1 = ageing(I1, AGES);
@@ -427,6 +428,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
         // Stochasic Age-Transition Loop
         for(int i=0; i < AGES; i++){
+	    // Determining attack rate!
             double lambda1 = find_lambda(q1,i,sigma_red_i1,I1,VI1,M,N,S);
             total_lambda += lambda1;
             double lambda2 = find_lambda(q2,i,sigma_red_i2,I2,VI2,M,N,S);
@@ -467,8 +469,6 @@ void stoch_model(double vv, int run_number,char* fileName){
             else{
                 Xvvi1[i] = 0;
             }
-            // fprintf(stderr,"Xvvi1: %lf \n",Xvvi1[i]);
-            // fflush(stderr);
 
             if(V[i] - Vs[i] - Xvvi1[i] >= 1){
                 temp_transition = V[i] - Vs[i] - Xvvi1[i];
@@ -477,14 +477,14 @@ void stoch_model(double vv, int run_number,char* fileName){
             else{
                 Xvvi2[i] = 0;
             }
-
             if(V[i] - Vs[i] - Xvvi1[i] - Xvvi2[i] - DVi2[i] >= 1){
                 temp_transition = V[i] - Vs[i] - Xvvi1[i] - Xvvi2[i] - DVi2[i];
-                VD[i] = poisson_draw(temp_transition * mu_i2[i],temp_transition);
+                VD[i] = poisson_draw(temp_transition * m[i],temp_transition);
             }
             else{
                 VD[i] = 0;
             }
+	    // Infected Strain One Logic
 
             if(I1[i] >= 1){
                 Y1[i] = poisson_draw(I1[i]*gamma,I1[i]);
@@ -524,8 +524,6 @@ void stoch_model(double vv, int run_number,char* fileName){
             else{
                 Y2[i] = 0;
             }
-            // fprintf(stderr,"Y2[i]: %lf \n",Y2[i]);
-            // fflush(stderr);
 
             // I2 exit logic, hospitalization
             if(I2[i] - Y2[i] >= 1){
@@ -543,8 +541,6 @@ void stoch_model(double vv, int run_number,char* fileName){
             else{
                 Di2[i] = 0;
             }
-            // fprintf(stderr,"Di2[i]: %lf \n",Di2[i]);
-            // fflush(stderr);
 
             if(I2[i] - Y2[i] - theta2[i] - Di2[i] >= 1 ){
                 temp_transition = (I2[i] - Y2[i] - theta2[i] );
@@ -593,7 +589,7 @@ void stoch_model(double vv, int run_number,char* fileName){
             }
             if(VI2[i] - YV2[i] - theta4[i] >= 1){
                 temp_transition = (VI2[i] - YV2[i] - theta4[i]);
-                DVi2[i] = poisson_draw(temp_transition*mu_i1[i]*gamma*sigma_d2,temp_transition);
+                DVi2[i] = poisson_draw(temp_transition*mu_i1[i]*gamma*s(1-sigma_d2),temp_transition);
             }
             else{
                 DVi2[i] = 0;
@@ -609,6 +605,7 @@ void stoch_model(double vv, int run_number,char* fileName){
             // Recovered Exit Logic to Susceptible
             omega1[i] = poisson_draw(R1[i]*(1/time_of_waning_natural),R1[i]);
 
+	    //Recovered One transitions
             if(R1[i] - omega1[i]>= 1){
                 temp_transition = R1[i] - omega1[i];
                 r1v[i] = poisson_draw(temp_transition*psi[t]*age_based_coverage[i],temp_transition);
@@ -635,7 +632,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             //R2 exit logic
             omega2[i] = poisson_draw(R2[i]*(1/time_of_waning_natural),R2[i]);
-
+	    //Recovered Two Transitions
             if(R2[i] - omega2[i]>= 1){
                 temp_transition = R2[i] - omega2[i];
                 r2v[i] = poisson_draw(temp_transition*psi[t]*age_based_coverage[i],temp_transition);
@@ -661,7 +658,7 @@ void stoch_model(double vv, int run_number,char* fileName){
             }
 
            Xvr1vi2[i] = poisson_draw(VR1[i]*(1-VC1)*lambda2*sigma_red_i1,VR1[i]); 
-
+	   //Vaccine Recovered One Comaprtment Logic
            if(VR1[i] - Xvr1vi2[i] >= 1){
                temp_transition = VR1[i] - Xvr1vi2[i];
                omega3[i] = poisson_draw(temp_transition*(1/time_of_immunity),temp_transition);
@@ -679,7 +676,7 @@ void stoch_model(double vv, int run_number,char* fileName){
            }
 
            Xvr2vi1[i] = poisson_draw(VR2[i]*(1-VC2)*lambda1*sigma_red_i2,VR2[i]); 
-
+           //Vaccine Recovered Two Compartment Logic
            if(VR2[i] - Xvr2vi1[i] >= 1){
                temp_transition = VR2[i] - Xvr2vi1[i];
                omega4[i] = poisson_draw(temp_transition*(1/time_of_immunity),temp_transition);
@@ -695,7 +692,7 @@ void stoch_model(double vv, int run_number,char* fileName){
            else{
                VR2D[i] = 0;
            }
-
+           //Hospitalization One Logic
            if(H1[i] >= 1){
                Yh1r1[i] = poisson_draw(H1[i]*zeta,H1[i]);
            }
@@ -710,6 +707,7 @@ void stoch_model(double vv, int run_number,char* fileName){
            else{
                H1D[i] = 0;
            }
+           //Hospitalization Two Logic
 
            if(H2[i] >= 1){
                temp_transition = H2[i]-Yh2r2[i];
@@ -773,6 +771,8 @@ void stoch_model(double vv, int run_number,char* fileName){
             XI1[i] = Xsi1[i] + Xr2i1[i]; 
             XI2[i] = Xsi2[i] + Xr1i2[i];
             XD[i] = D[i] + Di1[i] + Di2[i] + DVi1[i] + DVi2[i]; 
+	    XDI[i] = Di1[i] + Di2[i]; 
+            XDVI[i] = DVi1[i] + DVi2[i];
 
 //        fprintf(stderr,"N: %lf \n",N[i]);
 

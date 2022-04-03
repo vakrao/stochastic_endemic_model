@@ -1,22 +1,21 @@
-#include "stoch_models.h"
 #include "initparams.h"
+#include "stoch_models.h"
 #include<stdlib.h>
+#include<omp.h>
 #include<stdio.h>
 #include<time.h>
 #include<gsl/gsl_rng.h>  
 #include<pthread.h>
+#include<omp.h>
 
 #define NTHREADS 10
-
-
-
-
 
 //runs the model, takes as input from the command line # of simulations to complete 
 // ASSUMPTIONS: assumes that we want data for every possible vv 
 // ASSUMPTIONS: look at variable initilizations in simconstants.h 
 // Reccomended number of runs is 1000 
 extern gsl_rng *r;
+
 int main(int argc, char* argv[]){
     pthread_t threads[NTHREADS];
     int thread_args[NTHREADS];
@@ -49,7 +48,7 @@ int main(int argc, char* argv[]){
 
     double* vv_values;
     const char *vv_title =  "../data/vv_vals.csv";
-    vv_values = initialize_unique_csv(10,vv_title,vv_values);
+    vv_values = initialize_unique_csv(11,vv_title,vv_values);
     time_t seconds;
 
     int run_number = atoi(argv[1]);
@@ -66,18 +65,20 @@ int main(int argc, char* argv[]){
     csv_title = ".csv";
 
     int vaccine_configs = 11;
+    int starting_config = 0;
 
-    //Vaccine configs, relates to all the different vaccine percentages
-    for(int i = 0; i < vaccine_configs; i++){
-        //Running each vaccine percentage for number given by sim_number
-        for(int j = 0; j < run_number+1; j++){
-           dynamic_title[0] = (i);
-           *dynamic_vv = (j);
-           new_file = generate_names(i,j);
-          stoch_model(vv_values[i],j,new_file);
-          fprintf(stderr,"FINISHED VV %d, RUN %d \n",i,j);
-          fflush(stderr);
-        }
+    #pragma omp parallel
+    {
+    	//Vaccine configs, relates to all the different vaccine percentages
+    	for(int i = starting_config; i < vaccine_configs; i++){
+    	    //Running each vaccine percentage for number given by sim_number
+    	    for(int j = 0; j < run_number+1; j++){
+    	       new_file = generate_names(i,j);
+    	       stoch_model(vv_values[i],j,new_file);
+    	       fprintf(stderr,"FINISHED VV %d, RUN %d \n",i,j);
+    	       fflush(stderr);
+    	    }
+    	}
     }
     seconds = time(NULL);
     printf("MODEL DONE IN: %ld \n",seconds);

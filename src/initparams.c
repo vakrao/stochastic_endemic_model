@@ -6,10 +6,6 @@
 //vv, ABR, TI_ICU, ICU_ratio, M, immigration_proprotion
 //anything else...?
 
-// float initialize_vv(){
-//    return 0.0;
-//
-//}
 
 /*
 Description: returns float-list based on the repeated csv format
@@ -137,7 +133,7 @@ double* assign_hospitalization(float ti_icu, float* ICU_ratio,int ages){
 }
 
 char* generate_names(int vv_value, int stoch_number){
-    char* new_string =  (char*) malloc(90*sizeof(char));
+    char* new_string =  (char*) malloc(100*sizeof(char));
     sprintf(new_string,"run_%d_%d0.csv",stoch_number,vv_value);
     return new_string;
 
