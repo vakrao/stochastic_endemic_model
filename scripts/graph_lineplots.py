@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 sim_data = pd.read_csv("total_mean_values.csv")
 #wide_sim_data = pd.read_csv("/results/sim_one.csv")
 wide_sim_quantile_data = pd.read_csv("total_sim_vax_level_quantile_10.csv")
+infec_title = "LINC_exp1.png"
+death_title = "LDTH_exp1.png"
 #print("I1 : ",max(sim_data["I1"]))
 #print("I2 : ",max(sim_data["I2"]))
 #print("XSi1 : ",max(sim_data["XSi1"]))
@@ -29,4 +31,6 @@ g.map(sns.lineplot,"t","rolling")
 g.set(ylim=(0,20000))
 g2.map(sns.lineplot,"t","rolling")
 #g2.set(ylim=(0,20000))
+fig = g.savefig(infec_title)
+fig2 = g2.savefig(death_title)
 plt.show()

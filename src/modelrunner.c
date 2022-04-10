@@ -17,8 +17,6 @@
 extern gsl_rng *r;
 
 int main(int argc, char* argv[]){
-    pthread_t threads[NTHREADS];
-    int thread_args[NTHREADS];
     int rc,i;
     if(argc != 2){
         printf("Need number of runs!");
@@ -56,8 +54,6 @@ int main(int argc, char* argv[]){
     // based on vaccinating more individuasl in the first 
     // year than any other year 
     //initialize gsl random environment
-    gsl_rng_env_setup();
-    r = gsl_rng_alloc(gsl_rng_default);
     char* dynamic_title = (char*) malloc(sizeof(char)*100);
     char* dynamic_vv = (char*) malloc(sizeof(char)*100);
     char* csv_title = (char*)malloc(sizeof(char)*20);
@@ -80,9 +76,5 @@ int main(int argc, char* argv[]){
     	    }
     	}
     }
-    seconds = time(NULL);
-    printf("MODEL DONE IN: %ld \n",seconds);
-
-
     
 }

@@ -14,8 +14,8 @@
 // Name hese ex files: simulaion
 // Each simulaion will have a ceraint # of runs 
 // Each simulaion will have .csv files associaed 
-// vv is used o deerminte he vaccintaion level
-// run number is used o name he files
+// vv is used to determine the vaccintaion level
+// run number is used to name the files
 // Need to add dynamic vax changing
 gsl_rng *r;
 void stoch_model(double vv, int run_number,char* fileName){
@@ -51,6 +51,9 @@ void stoch_model(double vv, int run_number,char* fileName){
     const double time_of_waning_natural = 365;
     const double time_of_immunity = 2*365;
     const double variant_start_R02 = 0;
+    const int vax_start = 200; 
+    const int initVPeriod = 200; 
+    const int seasVPeriod = 60;
     double age_based_coverage[AGES];
     srand(time(NULL));
     long value = rand()%100000;
@@ -159,7 +162,6 @@ void stoch_model(double vv, int run_number,char* fileName){
     // Be super-general abou names...? Use 3-d array 
 
     const float q1 = 0.0544;
-//    const float q1 = 0;
     float R02 = 0;
     int t = 0;
     float q2  = 0;
@@ -771,8 +773,8 @@ void stoch_model(double vv, int run_number,char* fileName){
             XI1[i] = Xsi1[i] + Xr2i1[i]; 
             XI2[i] = Xsi2[i] + Xr1i2[i];
             XD[i] = D[i] + Di1[i] + Di2[i] + DVi1[i] + DVi2[i]; 
-	    XDI[i] = Di1[i] + Di2[i]; 
-            XDVI[i] = DVi1[i] + DVi2[i];
+	        //XDI[i] = Di1[i] + Di2[i]; 
+          //  XDVI[i] = DVi1[i] + DVi2[i];
 
 //        fprintf(stderr,"N: %lf \n",N[i]);
 
@@ -911,6 +913,7 @@ void stoch_model(double vv, int run_number,char* fileName){
     free(cm_school);
     free(cm_overall);
     free(M);
+    gsl_rng_free(r);
     return; 
 }
    //fprintf(stderr,"STARTING TO ENTER LOOP!");
