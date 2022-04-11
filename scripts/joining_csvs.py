@@ -4,28 +4,23 @@ import glob
 import string
 import pandas as pd
 #os.chdir("../src")
-extension = 'csv'
+#extension = 'csv'
 titles = []
+qtitles = []
 total_mean_name = "total_mean_vax_levels.csv"
-for k in range(0,11):
+total_quantile_name = "total_quantile_vax_levels.csv"
+vaccine_configs =  11
+start_config = 0 
+for k in range(start_config,vaccine_configs):
     string_val = str(k)
-    title_name = "../results/exp_1/raw_runs/run_*_"+string_val+"0.csv"
-    print(title_name)
+    title_name = "run_*_"+string_val+"0.csv"
     all_filenames = [i for i in glob.glob(title_name)]
     #combine all files in the list
-    for j in range(0,11):
-        all_filenames[j] = "../results/exp_1/raw_runs/"+os.path.basename(all_filenames[j])
-    print(all_filenames)
+    for j in range(0,len(all_filenames)):
+        all_filenames[j] = os.path.basename(all_filenames[j])
     combined_csv = pd.concat([pd.read_csv(f) for f in all_filenames ])
     #export to csv
     total_sim_string_name = "total_sim_vax_level_"+str(k)+"0.csv"
     print("finished one")
     combined_csv.to_csv( total_sim_string_name, index=False, encoding='utf-8-sig')
 
-for k in range(0,11):
-    string_val = str(k)
-    title_name = "total_sim_vax_level_mean_"+string_val+"0.csv"
-    titles.append(title_name)
-
-combined_csv = pd.concat([pd.read_csv(f) for f in titles])
-combined_csv.to_csv( total_mean_name, index=False, encoding='utf-8-sig')
