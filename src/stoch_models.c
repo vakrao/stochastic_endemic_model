@@ -14,10 +14,31 @@
 // Name hese ex files: simulaion
 // Each simulaion will have a ceraint # of runs 
 // Each simulaion will have .csv files associaed 
-// vv is used to determine the vaccintaion level
-// run number is used to name the files
+// vv is used o deerminte he vaccintaion level
+// run number is used o name he files
 // Need to add dynamic vax changing
-gsl_rng *r;
+
+double poisson_draw(gsl_rng *r,double mu, double max_value){
+//    fprintf(stderr,"MU: %f",mu);
+//    fflush(stderr);
+    if(mu == 0){
+	return 0;
+    }
+
+    double draw_value = max_value+1;
+    if(mu >= max_value){
+        return max_value;
+    }
+    while(draw_value > max_value ){
+        draw_value = gsl_ran_poisson(r,mu);
+    }
+    return draw_value;
+}
+
+
+
+
+
 void stoch_model(double vv, int run_number,char* fileName){
     FILE *fptr = fopen(fileName,"w");
     //fprintf(stderr,"STARTING MODEL! \n ");
@@ -40,24 +61,34 @@ void stoch_model(double vv, int run_number,char* fileName){
     const double C1 = 0.5;
     const double C2 = 0.9;
     const int years = 20; 
+    //hospitalization waning recovery rate
     const double zeta = 0.125;
     const double ti_icu = 8;
     const int ft = years*365;
     const double VC1 = 0.5; 
     const double VC2 = 0.9;
+    //school and variant variables 
     const double variant_start = 300;
+    const int school_spring = 150; 
+    const int school_break = 95; 
+    const int school_fall = 120;
+    const int vaccine_start = school_end + school_break;
+    const int first_vax_seas_dur = 100;
+    const int perm_vax_seas_dur = 60;
     const double R01 = 5; 
     const double gamma = 0.1587;
     const double time_of_waning_natural = 365;
     const double time_of_immunity = 2*365;
     const double variant_start_R02 = 0;
-    const int vax_start = 200; 
-    const int initVPeriod = 200; 
-    const int seasVPeriod = 60;
     double age_based_coverage[AGES];
+   
+   
     srand(time(NULL));
-    long value = rand()%100000;
+    gsl_rng *r;
+    const gsl_rng_type *T;
+    long value = rand()%10000;
     gsl_rng_env_setup();
+    T = gsl_rng_default;
     r = gsl_rng_alloc(gsl_rng_default);
     gsl_rng_set(r,value);
     int truncated_percent = trunc(vv);
@@ -67,7 +98,10 @@ void stoch_model(double vv, int run_number,char* fileName){
     else{
         truncated_percent = 10;
     }
-
+    for(int i = 0; i < AGES; i++){
+	age_based_coverage[i] = 0; 
+    }
+    //assigning vaccine percentages based on age
     for(int i = 0; i < AGES; i++){
         if ( i <= 5 & i > 0 ){
             age_based_coverage[i] = 0;
@@ -88,11 +122,11 @@ void stoch_model(double vv, int run_number,char* fileName){
             age_based_coverage[i] = (.698*vv)/365.0;
         }
     }
-    double* m;
+    double* m = (double*) malloc(AGES * sizeof(double));
     double** cm_school = (double**) malloc(AGES * sizeof(double*));
     double** cm_overall = (double**) malloc(AGES * sizeof(double*));
     double** M = (double**) malloc(AGES * sizeof(double*));
-    double *mu_i1;
+    double *mu_i1 = (double*) malloc(AGES * sizeof(double));
     double *mu_i2=(double*) malloc(AGES * sizeof(double));
     double* VC = (double*) malloc(AGES * sizeof(double));
     double* theta = (double*) malloc(AGES * sizeof(double));
@@ -119,7 +153,7 @@ void stoch_model(double vv, int run_number,char* fileName){
     double* XI1 = (double*) malloc(AGES * sizeof(double));
     double* XI2 = (double*) malloc(AGES * sizeof(double));
     double* XD = (double*) malloc(AGES * sizeof(double));
-    double* N;
+    double* N =(double*) malloc(AGES * sizeof(double));
 
     const char *ifr_ile =  "../data/ifr.csv";
     const char *vax_ile =  "../data/dailyvax.csv";
@@ -128,28 +162,31 @@ void stoch_model(double vv, int run_number,char* fileName){
     const char *im_ile = "../data/immigration_prop.csv";
     const char *overall_ile = "../data/overall_contacts.csv";
     const char *icu_file = "../data/icu_ratio.csv";
+    const char *school_file = "../data/school_contacts.csv";
     int psi_counter = 0;
+    int perm_unvax_period = school_spring + school_break;
+    int perm_vax_period = perm_vax_period + perm_vax_seas_dur;
     for(int i = 0; i < years; i++){
         for(int j = 0; j < 365; j++){
             if( i == 0){
-                if(j < 200){
+                if(j < vaccine_start){
                     psi[psi_counter] = 0; 
                 }
-                if(j >= 200 && j < 300 ){
+                if(j >= vaccine_start && j < (vaccine_start + first_year_vax_dur)){
                     psi[psi_counter] = 1; 
                 }
-                if(j >= 300){
+                if(j >= (vaccine_start + first_year_vax_dur)){
                     psi[psi_counter] = 0;
                 }
             }
             if( i > 0){
-                if(j < 200){
+                if(j < perm_unvax_period){
                     psi[psi_counter] = 0; 
                 }
-                if(j >= 200 && j < 265 ){
+                if(j >= perm_unvax_period && j < perm_vax_period){
                     psi[psi_counter] = 1; 
                 }
-                if(j >= 265){
+                if(j >= perm_vax_period){
                     psi[psi_counter] = 0;
                 }
             }
@@ -157,7 +194,6 @@ void stoch_model(double vv, int run_number,char* fileName){
         }
     }
 
-    // Two houghs o program model
     // Be specific abou names 
     // Be super-general abou names...? Use 3-d array 
 
@@ -247,13 +283,14 @@ void stoch_model(double vv, int run_number,char* fileName){
     initialize_repeated_csv(AGES,im_ile,im_prop);
     initialize_repeated_csv(AGES,icu_file,ICU_raio);
     read_contact_matrices(AGES, overall_ile,cm_overall);
+    read_contact_matrices(AGES, school_file,cm_school);
     int couner = 0;
     
     // Setting values for theta, mu, and m
     for(int i = 0; i < AGES; i++){
         theta[i] = 0;
         mu_i1[i] = mu_i1[i] / 1000.0;
-        mu_i2[i] = mu_i2[i] * ifr_i2_scale;
+        mu_i2[i] = mu_i1[i] * ifr_i2_scale;
         m[i] = m[i] / 365.0;
         m[i] = m[i] * 5.0;
     }
@@ -355,19 +392,31 @@ void stoch_model(double vv, int run_number,char* fileName){
     int rand_number = 0;
     //Time loop starts here
     while(t < ft){
-	//Variant if-statement loop!
+	// School contact matrix control flow
+	if(t %% (school_spring) == 0 ){
+	    for(int i = 0; i < AGES; i++){
+	       for(int j = 0; j < AGES; j++){
+		   M[i][j] -= cm_school[i][j];
+		}
+	    }
+	}
+	if(t %% (school_spring + school_break) == 0 ){
+	    for(int i = 0; i < AGES; i++){
+	       for(int j = 0; j < AGES; j++){
+		   M[i][j] += cm_school[i][j];
+		}
+	    }
+        }
+	// Variant control flow 
         if(t == variant_start){
             R02 = variant_start_R02;
-            //To ADD: add new 100 imports ditributed across all ages
             for(int i = 0 ; i < new_yearly_imports; i++){
                 rand_number = rand() % AGES;
                 if(S[rand_number] > 0){
                     S[rand_number] = S[rand_number] -  1; 
                     I2[rand_number] = I2[rand_number] + 1; 
                 }
-            }
-//            S[25] = S[25] - 1;
-//            I2[25] = I2[25] + 1;
+            }`
             q2 = q2_value;
         }
         else{
@@ -435,10 +484,10 @@ void stoch_model(double vv, int run_number,char* fileName){
             total_lambda += lambda1;
             double lambda2 = find_lambda(q2,i,sigma_red_i2,I2,VI2,M,N,S);
             double lambda_mean = (S[i] * lambda1);
-            Xsi1[i] =  poisson_draw(lambda_mean,S[i]);
+            Xsi1[i] =  poisson_draw(r,lambda_mean,S[i]);
             if(S[i] - Xsi1[i] >= 1){
                 temp_transition = (S[i] - Xsi1[i]);
-                Xsi2[i] = poisson_draw(temp_transition*lambda2,temp_transition);
+                Xsi2[i] = poisson_draw(r,temp_transition*lambda2,temp_transition);
             }
             else{
                 Xsi2[i] = 0;
@@ -446,7 +495,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             if(S[i] - Xsi1[i] - Xsi2[i] >= 1){
                 temp_transition = (S[i] - Xsi1[i] - Xsi2[i]);
-                sv[i] = poisson_draw(temp_transition*psi[t]*age_based_coverage[i],temp_transition);
+                sv[i] = poisson_draw(r,temp_transition*psi[t]*age_based_coverage[i],temp_transition);
             }
             else{
                 sv[i] = 0;
@@ -454,19 +503,19 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             if(S[i] - Xsi1[i] - Xsi2[i] - sv[i] >= 1){
                 temp_transition = (S[i] - Xsi1[i] - Xsi2[i] - sv[i]);
-                SD[i] = poisson_draw(temp_transition * m[i],temp_transition);
+                SD[i] = poisson_draw(r,temp_transition * m[i],temp_transition);
            }
             else{
                 SD[i] = 0;
            }
            // V comparment exit logic
-           Vs[i] = poisson_draw(V[i]*(1/time_of_immunity),V[i]);
+           Vs[i] = poisson_draw(r,V[i]*(1/time_of_immunity),V[i]);
 
             // sigma_i1 = sigma_i1
             // ve2 = sigma_i2
             if(V[i] - Vs[i] >= 1){
                 temp_transition = V[i] - Vs[i];
-                Xvvi1[i] = poisson_draw(temp_transition * lambda1 * (1-sigma_i1),temp_transition);
+                Xvvi1[i] = poisson_draw(r,temp_transition * lambda1 * (1-sigma_i1),temp_transition);
             }
             else{
                 Xvvi1[i] = 0;
@@ -474,14 +523,14 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             if(V[i] - Vs[i] - Xvvi1[i] >= 1){
                 temp_transition = V[i] - Vs[i] - Xvvi1[i];
-                Xvvi2[i] = poisson_draw(temp_transition * lambda2 * (1-sigma_i2),temp_transition);
+                Xvvi2[i] = poisson_draw(r,temp_transition * lambda2 * (1-sigma_i2),temp_transition);
             }
             else{
                 Xvvi2[i] = 0;
             }
             if(V[i] - Vs[i] - Xvvi1[i] - Xvvi2[i] - DVi2[i] >= 1){
                 temp_transition = V[i] - Vs[i] - Xvvi1[i] - Xvvi2[i] - DVi2[i];
-                VD[i] = poisson_draw(temp_transition * m[i],temp_transition);
+                VD[i] = poisson_draw(r,temp_transition * m[i],temp_transition);
             }
             else{
                 VD[i] = 0;
@@ -489,7 +538,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 	    // Infected Strain One Logic
 
             if(I1[i] >= 1){
-                Y1[i] = poisson_draw(I1[i]*gamma,I1[i]);
+                Y1[i] = poisson_draw(r,I1[i]*gamma,I1[i]);
             }
             else{
                 Y1[i] = 0;
@@ -497,7 +546,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             if(I1[i] - Y1[i] >= 1){
                 temp_transition = (I1[i] - Y1[i]);
-                theta1[i] = poisson_draw(temp_transition*theta[i],temp_transition);
+                theta1[i] = poisson_draw(r,temp_transition*theta[i],temp_transition);
             }
             else{
                 theta1[i] = 0;
@@ -505,7 +554,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             if(I1[i] - Y1[i] - theta1[i] >= 1){
                 temp_transition = (I1[i] - Y1[i] - theta1[i]);
-                Di1[i] = poisson_draw(temp_transition*mu_i1[i]*gamma,temp_transition);
+                Di1[i] = poisson_draw(r,temp_transition*mu_i1[i]*gamma,temp_transition);
             }
             else{
                 Di1[i] = 0;
@@ -513,7 +562,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             if(I1[i] - Y1[i] - theta1[i] - Di1[i] >= 1){
                 temp_transition = (I1[i] - Y1[i] - theta1[i] - Di1[i]);
-                I1D[i] = poisson_draw(temp_transition*m[i],temp_transition);
+                I1D[i] = poisson_draw(r,temp_transition*m[i],temp_transition);
             }
             else{
                 I1D[i] = 0;
@@ -521,7 +570,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             // I2 exit logic, recovered
             if(I2[i] >= 1){
-                Y2[i] = poisson_draw(I2[i]*gamma,I2[i]);
+                Y2[i] = poisson_draw(r,I2[i]*gamma,I2[i]);
             }
             else{
                 Y2[i] = 0;
@@ -530,7 +579,7 @@ void stoch_model(double vv, int run_number,char* fileName){
             // I2 exit logic, hospitalization
             if(I2[i] - Y2[i] >= 1){
                 temp_transition = (I2[i] - Y2[i] );
-                theta2[i] = poisson_draw(temp_transition*theta[i],temp_transition);
+                theta2[i] = poisson_draw(r,temp_transition*theta[i],temp_transition);
             }
             else{
                 theta2[i] = 0;
@@ -538,7 +587,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             if(I2[i] - Y2[i] - theta2[i] >= 1){
                 temp_transition = (I2[i] - Y2[i] - theta2[i] );
-                Di2[i] = poisson_draw(temp_transition*mu_i2[i]*gamma,temp_transition);
+                Di2[i] = poisson_draw(r,temp_transition*mu_i2[i]*gamma,temp_transition);
             }
             else{
                 Di2[i] = 0;
@@ -546,7 +595,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             if(I2[i] - Y2[i] - theta2[i] - Di2[i] >= 1 ){
                 temp_transition = (I2[i] - Y2[i] - theta2[i] );
-                I2D[i] = poisson_draw(temp_transition*m[i],temp_transition);
+                I2D[i] = poisson_draw(r,temp_transition*m[i],temp_transition);
             }
             else{
                 I2D[i] = 0;
@@ -554,11 +603,11 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             // VI1 exit logic
 
-            YV1[i] = poisson_draw(VI1[i]*gamma,VI1[i]);
+            YV1[i] = poisson_draw(r,VI1[i]*gamma,VI1[i]);
 
             if(VI1[i] - YV1[i] >= 1){
                 temp_transition = (VI1[i] - YV1[i] );
-                theta3[i] = poisson_draw(temp_transition*theta[i]*(1-sigma_h1),temp_transition);
+                theta3[i] = poisson_draw(r,temp_transition*theta[i]*(1-sigma_h1),temp_transition);
             }
             else{
                 theta3[i] = 0;
@@ -566,7 +615,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             if(VI1[i] - YV1[i] - theta3[i] >= 1){
                 temp_transition = (VI1[i] - YV1[i] - theta3[i] );
-                DVi1[i] = poisson_draw(temp_transition*(1-sigma_d1)*gamma,temp_transition);
+                DVi1[i] = poisson_draw(r,temp_transition*(1-sigma_d1)*gamma*mu_i1[i],temp_transition);
             }
             else{
                 DVi1[i] = 0;
@@ -574,43 +623,43 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             if(VI1[i] - YV1[i] - theta3[i] - DVi1[i] >= 1){
                 temp_transition = (VI1[i] - YV1[i] - theta3[i] - DVi1[i]);
-                VI1D[i] = poisson_draw(temp_transition*m[i],temp_transition);
+                VI1D[i] = poisson_draw(r,temp_transition*m[i],temp_transition);
             }
             else{
                 VI1D[i] = 0;
             }
 
-            YV2[i] = poisson_draw(VI2[i]*gamma,VI2[i]);
+            YV2[i] = poisson_draw(r,VI2[i]*gamma,VI2[i]);
 
             if(VI2[i] - YV2[i] >= 1){
                 temp_transition = (VI2[i] - YV2[i]);
-                theta4[i] = poisson_draw(temp_transition*theta[i]*sigma_h2,temp_transition);
+                theta4[i] = poisson_draw(r,temp_transition*theta[i]*sigma_h2,temp_transition);
             }
             else{
                 theta4[i] = 0;
             }
             if(VI2[i] - YV2[i] - theta4[i] >= 1){
                 temp_transition = (VI2[i] - YV2[i] - theta4[i]);
-                DVi2[i] = poisson_draw(temp_transition*mu_i1[i]*gamma*s(1-sigma_d2),temp_transition);
+                DVi2[i] = poisson_draw(r,temp_transition*mu_i2[i]*gamma*(1-sigma_d2),temp_transition);
             }
             else{
                 DVi2[i] = 0;
             }
             if(VI2[i] - YV2[i] - theta4[i] - DVi2[i] >= 1){
                 temp_transition = (VI2[i] - YV2[i] - theta4[i]);
-                VI2D[i] = poisson_draw(temp_transition*m[i],temp_transition);
+                VI2D[i] = poisson_draw(r,temp_transition*m[i],temp_transition);
             }
             else{
                 VI2D[i] = 0;
             }
 
             // Recovered Exit Logic to Susceptible
-            omega1[i] = poisson_draw(R1[i]*(1/time_of_waning_natural),R1[i]);
+            omega1[i] = poisson_draw(r,R1[i]*(1/time_of_waning_natural),R1[i]);
 
 	    //Recovered One transitions
             if(R1[i] - omega1[i]>= 1){
                 temp_transition = R1[i] - omega1[i];
-                r1v[i] = poisson_draw(temp_transition*psi[t]*age_based_coverage[i],temp_transition);
+                r1v[i] = poisson_draw(r,temp_transition*psi[t]*age_based_coverage[i],temp_transition);
             }
             else{
                 r1v[i] = 0;
@@ -618,7 +667,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             if(R1[i] - omega1[i] - r1v[i]>= 1){
                 temp_transition = R1[i] - omega1[i] -r1v[i];
-                Xr1i2[i] = poisson_draw(temp_transition*(1-C2)*lambda2,temp_transition);
+                Xr1i2[i] = poisson_draw(r,temp_transition*(1-C2)*lambda2,temp_transition);
             }
             else{
                 Xr1i2[i] = 0;
@@ -626,18 +675,18 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             if(R1[i] - omega1[i] - r1v[i] - Xr1i2[i] >= 1){
                 temp_transition = R1[i] - omega1[i] -r1v[i] - Xr1i2[i];
-                R1D[i] = poisson_draw(temp_transition*m[i],temp_transition);
+                R1D[i] = poisson_draw(r,temp_transition*m[i],temp_transition);
             }
             else{
                 R1D[i] = 0;
             }
 
             //R2 exit logic
-            omega2[i] = poisson_draw(R2[i]*(1/time_of_waning_natural),R2[i]);
+            omega2[i] = poisson_draw(r,R2[i]*(1/time_of_waning_natural),R2[i]);
 	    //Recovered Two Transitions
             if(R2[i] - omega2[i]>= 1){
                 temp_transition = R2[i] - omega2[i];
-                r2v[i] = poisson_draw(temp_transition*psi[t]*age_based_coverage[i],temp_transition);
+                r2v[i] = poisson_draw(r,temp_transition*psi[t]*age_based_coverage[i],temp_transition);
             }
             else{
                 r2v[i] = 0;
@@ -645,7 +694,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             if(R2[i] - omega2[i] - r2v[i]>= 1){
                 temp_transition = R2[i] - omega2[i] -r2v[i];
-                Xr2i1[i] = poisson_draw(temp_transition*(1-C2)*lambda1,temp_transition);
+                Xr2i1[i] = poisson_draw(r,temp_transition*(1-C2)*lambda1,temp_transition);
             }
             else{
                 Xr1i2[i] = 0;
@@ -653,17 +702,17 @@ void stoch_model(double vv, int run_number,char* fileName){
 
             if(R2[i] - omega2[i] - r2v[i] - Xr2i1[i] >= 1){
                 temp_transition = R2[i] - omega2[i] -r2v[i] - Xr2i1[i];
-                R2D[i] = poisson_draw(temp_transition*m[i],temp_transition);
+                R2D[i] = poisson_draw(r,temp_transition*m[i],temp_transition);
             }
             else{
                 R2D[i] = 0;
             }
 
-           Xvr1vi2[i] = poisson_draw(VR1[i]*(1-VC1)*lambda2*sigma_red_i1,VR1[i]); 
+           Xvr1vi2[i] = poisson_draw(r,VR1[i]*(1-VC1)*lambda2*sigma_red_i1,VR1[i]); 
 	   //Vaccine Recovered One Comaprtment Logic
            if(VR1[i] - Xvr1vi2[i] >= 1){
                temp_transition = VR1[i] - Xvr1vi2[i];
-               omega3[i] = poisson_draw(temp_transition*(1/time_of_immunity),temp_transition);
+               omega3[i] = poisson_draw(r,temp_transition*(1/time_of_immunity),temp_transition);
            }
            else{
                omega3[i] = 0;
@@ -671,17 +720,17 @@ void stoch_model(double vv, int run_number,char* fileName){
 
            if(VR1[i] - Xvr1vi2[i] - omega3[i] >= 1){
                temp_transition = VR1[i] - Xvr1vi2[i] - omega3[i];
-               VR1D[i] = poisson_draw(temp_transition*m[i],temp_transition);
+               VR1D[i] = poisson_draw(r,temp_transition*m[i],temp_transition);
            }
            else{
                VR1D[i] = 0;
            }
 
-           Xvr2vi1[i] = poisson_draw(VR2[i]*(1-VC2)*lambda1*sigma_red_i2,VR2[i]); 
+           Xvr2vi1[i] = poisson_draw(r,VR2[i]*(1-VC2)*lambda1*sigma_red_i2,VR2[i]); 
            //Vaccine Recovered Two Compartment Logic
            if(VR2[i] - Xvr2vi1[i] >= 1){
                temp_transition = VR2[i] - Xvr2vi1[i];
-               omega4[i] = poisson_draw(temp_transition*(1/time_of_immunity),temp_transition);
+               omega4[i] = poisson_draw(r,temp_transition*(1/time_of_immunity),temp_transition);
            }
            else{
                omega4[i] = 0;
@@ -689,14 +738,14 @@ void stoch_model(double vv, int run_number,char* fileName){
 
            if(VR2[i] - Xvr2vi1[i] - omega4[i] >= 1){
                temp_transition = VR2[i] - Xvr2vi1[i] - omega4[i];
-               VR2D[i] = poisson_draw(temp_transition*m[i],temp_transition);
+               VR2D[i] = poisson_draw(r,temp_transition*m[i],temp_transition);
            }
            else{
                VR2D[i] = 0;
            }
            //Hospitalization One Logic
            if(H1[i] >= 1){
-               Yh1r1[i] = poisson_draw(H1[i]*zeta,H1[i]);
+               Yh1r1[i] = poisson_draw(r,H1[i]*zeta,H1[i]);
            }
            else{
                Yh1r1[i] = 0;
@@ -704,7 +753,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
            if(H1[i] - Yh1r1[i] >= 1){
                temp_transition = H1[i]-Yh1r1[i];
-               H1D[i] = poisson_draw(temp_transition*m[i],temp_transition);
+               H1D[i] = poisson_draw(r,temp_transition*m[i],temp_transition);
            }
            else{
                H1D[i] = 0;
@@ -713,7 +762,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
            if(H2[i] >= 1){
                temp_transition = H2[i]-Yh2r2[i];
-               Yh2r2[i] = poisson_draw(temp_transition*zeta,temp_transition);
+               Yh2r2[i] = poisson_draw(r,temp_transition*zeta,temp_transition);
            }
            else{
                Yh2r2[i] = 0;
@@ -721,26 +770,26 @@ void stoch_model(double vv, int run_number,char* fileName){
 
            if(H2[i] - Yh2r2[i] >= 1){
                temp_transition = H2[i]-Yh2r2[i];
-               H2D[i] = poisson_draw(temp_transition*m[i],temp_transition);
+               H2D[i] = poisson_draw(r,temp_transition*m[i],temp_transition);
            }
            else{
                H2D[i] = 0;
            }
 
-            IS[i] =  poisson_draw((S[i] / N[i]) * im_prop[i],S[i]);
-            IV[i] =  poisson_draw((V[i] / N[i]) * im_prop[i],V[i]);
-            II1[i] = poisson_draw((I1[i] / N[i]) * im_prop[i],I1[i]);
-            IH1[i] = poisson_draw(((H1[i] / N[i])) * im_prop[i],H1[i]);
-            IR1[i] = poisson_draw((R1[i] / N[i]) * im_prop[i],R1[i]);
-            IVI1[i]= poisson_draw((VI1[i] / N[i]) * im_prop[i],VI1[i]);
-            IH2[i] = poisson_draw((H2[i] / N[i]) * im_prop[i],H2[i]);
-            IR2[i] = poisson_draw((R2[i] / N[i]) * im_prop[i],R2[i]);
-            IVI2[i]= poisson_draw((VI2[i] / N[i]) * im_prop[i],VI2[i]);
-            IVR2[i]= poisson_draw((VR2[i] / N[i]) * im_prop[i],VR2[i]);
+            IS[i] =  poisson_draw(r,(S[i] / N[i]) * im_prop[i],S[i]);
+            IV[i] =  poisson_draw(r,(V[i] / N[i]) * im_prop[i],V[i]);
+            II1[i] = poisson_draw(r,(I1[i] / N[i]) * im_prop[i],I1[i]);
+            IH1[i] = poisson_draw(r,((H1[i] / N[i])) * im_prop[i],H1[i]);
+            IR1[i] = poisson_draw(r,(R1[i] / N[i]) * im_prop[i],R1[i]);
+            IVI1[i]= poisson_draw(r,(VI1[i] / N[i]) * im_prop[i],VI1[i]);
+            IH2[i] = poisson_draw(r,(H2[i] / N[i]) * im_prop[i],H2[i]);
+            IR2[i] = poisson_draw(r,(R2[i] / N[i]) * im_prop[i],R2[i]);
+            IVI2[i]= poisson_draw(r,(VI2[i] / N[i]) * im_prop[i],VI2[i]);
+            IVR2[i]= poisson_draw(r,(VR2[i] / N[i]) * im_prop[i],VR2[i]);
 
             if(i == 0){
                 float totalN = total(N);
-                SB[i] = poisson_draw(totalN*birth_rate,totalN);
+                SB[i] = poisson_draw(r,totalN*birth_rate,totalN);
             }
         }
 
@@ -772,29 +821,29 @@ void stoch_model(double vv, int run_number,char* fileName){
             XIV2[i] = Xvvi2[i] + Xvr1vi2[i];
             XI1[i] = Xsi1[i] + Xr2i1[i]; 
             XI2[i] = Xsi2[i] + Xr1i2[i];
-            XD[i] = D[i] + Di1[i] + Di2[i] + DVi1[i] + DVi2[i]; 
-	        //XDI[i] = Di1[i] + Di2[i]; 
-          //  XDVI[i] = DVi1[i] + DVi2[i];
+            XD[i] = Di1[i] + Di2[i] + DVi1[i] + DVi2[i]; 
+//	    XDI[i] = Di1[i] + Di2[i]; 
+ //           XDVI[i] = DVi1[i] + DVi2[i];
 
 //        fprintf(stderr,"N: %lf \n",N[i]);
 
 
-          fprintf(fptr,"%d,%f,%d,%f,N\n",t,vv,i,N[i]);
-          fprintf(fptr,"%d,%f,%d,%f,S\n",t,vv,i,S[i]);
-          fprintf(fptr,"%d,%f,%d,%f,I1\n",t,vv,i,I1[i]);
-          fprintf(fptr,"%d,%f,%d,%f,I2\n",t,vv,i,I2[i]);
-          fprintf(fptr,"%d,%f,%d,%f,R1\n",t,vv,i,R1[i]);
-          fprintf(fptr,"%d,%f,%d,%f,R2\n",t,vv,i,R2[i]);
-          fprintf(fptr,"%d,%f,%d,%f,V\n",t,vv,i,V[i]);
-          fprintf(fptr,"%d,%f,%d,%f,XIVI1\n",t,vv,i,XIV1[i]);
-          fprintf(fptr,"%d,%f,%d,%f,XIV2\n",t,vv,i,XIV2[i]);
-          fprintf(fptr,"%d,%f,%d,%f,Xsi1\n",t,vv,i,Xsi1[i]);
-          fprintf(fptr,"%d,%f,%d,%f,Xsi2\n",t,vv,i,Xsi2[i]);
-          fprintf(fptr,"%d,%f,%d,%f,XD\n",t,vv,i,XD[i]);
-          fprintf(fptr,"%d,%f,%d,%f,VR1\n",t,vv,i,VR1[i]);
- //         fprintf(fptr,"%d,%f,%d,%f,VR2\n",t,vv,i,VR2[i]);
-          fprintf(fptr,"%d,%f,%d,%f,H1\n",t,vv,i,H1[i]);
- //         fprintf(fptr,"%d,%f,%d,%f,H2\n",t,vv,i,H2[i]);
+          fprintf(fptr,"%d,%.2f,%d,%f,N\n",t,vv,i,N[i]);
+          fprintf(fptr,"%d,%.2f,%d,%f,S\n",t,vv,i,S[i]);
+          fprintf(fptr,"%d,%.2f,%d,%f,I1\n",t,vv,i,I1[i]);
+          fprintf(fptr,"%d,%.2f,%d,%f,I2\n",t,vv,i,I2[i]);
+          fprintf(fptr,"%d,%.2f,%d,%f,R1\n",t,vv,i,R1[i]);
+          fprintf(fptr,"%d,%.2f,%d,%f,R2\n",t,vv,i,R2[i]);
+          fprintf(fptr,"%d,%.2f,%d,%f,V\n",t,vv,i,V[i]);
+          fprintf(fptr,"%d,%.2f,%d,%f,XIVI1\n",t,vv,i,XIV1[i]);
+          fprintf(fptr,"%d,%.2f,%d,%f,XIV2\n",t,vv,i,XIV2[i]);
+          fprintf(fptr,"%d,%.2f,%d,%f,Xsi1\n",t,vv,i,Xsi1[i]);
+          fprintf(fptr,"%d,%.2f,%d,%f,Xsi2\n",t,vv,i,Xsi2[i]);
+          fprintf(fptr,"%d,%.2f,%d,%f,XD\n",t,vv,i,XD[i]);
+          fprintf(fptr,"%d,%.2f,%d,%f,VR1\n",t,vv,i,VR1[i]);
+         fprintf(fptr,"%d,%.2f,%d,%f,VR2\n",t,vv,i,VR2[i]);
+          fprintf(fptr,"%d,%.2f,%d,%f,H1\n",t,vv,i,H1[i]);
+          fprintf(fptr,"%d,%.2f,%d,%f,H2\n",t,vv,i,H2[i]);
 
         }
 
@@ -805,6 +854,7 @@ void stoch_model(double vv, int run_number,char* fileName){
         total_lambda = 0;
 
         for(int c = 0; c < AGES; c++){
+	    XD[i] = 0; 
             Xsi1[c] = 0;
             Xsi2[c] = 0;
             Xr1[c] = 0;
@@ -914,6 +964,7 @@ void stoch_model(double vv, int run_number,char* fileName){
     free(cm_overall);
     free(M);
     gsl_rng_free(r);
+    fclose(fptr);
     return; 
 }
    //fprintf(stderr,"STARTING TO ENTER LOOP!");

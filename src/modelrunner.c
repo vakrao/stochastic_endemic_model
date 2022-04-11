@@ -6,7 +6,7 @@
 #include<time.h>
 #include<gsl/gsl_rng.h>  
 #include<pthread.h>
-#include<omp.h>
+//#include<omp.h>
 
 #define NTHREADS 10
 
@@ -17,6 +17,8 @@
 extern gsl_rng *r;
 
 int main(int argc, char* argv[]){
+    pthread_t threads[NTHREADS];
+    int thread_args[NTHREADS];
     int rc,i;
     if(argc != 2){
         printf("Need number of runs!");
@@ -63,8 +65,8 @@ int main(int argc, char* argv[]){
     int vaccine_configs = 11;
     int starting_config = 0;
 
-    #pragma omp parallel
-    {
+    //#pragma omp parallel
+    
     	//Vaccine configs, relates to all the different vaccine percentages
     	for(int i = starting_config; i < vaccine_configs; i++){
     	    //Running each vaccine percentage for number given by sim_number
@@ -73,8 +75,14 @@ int main(int argc, char* argv[]){
     	       stoch_model(vv_values[i],j,new_file);
     	       fprintf(stderr,"FINISHED VV %d, RUN %d \n",i,j);
     	       fflush(stderr);
+	       free(new_file);
     	    }
+	    new_file = (char*)malloc(sizeof(char)*90);
     	}
-    }
+   
+    seconds = time(NULL);
+    printf("MODEL DONE IN: %ld \n",seconds);
+
+
     
 }

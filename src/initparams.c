@@ -56,6 +56,7 @@ void initialize_repeated_csv(int list_size,const char* filename, double* lst){
         }        
         counter = reps + counter;
     }
+    fclose(stream);
 }
 
 void read_contact_matrices(int list_size,const char* filename, double** lst){
@@ -80,22 +81,28 @@ void read_contact_matrices(int list_size,const char* filename, double** lst){
         }
         i += 1;
     }
+   fclose(stream);
 }
 
-double* initialize_unique_csv(int list_size,const char* filename,double lst[]){
+double* initialize_unique_csv(int list_size,const char* filename,double *lst){
     FILE* stream = fopen(filename,"r");
     char line[300];
     float value = 0;
     int reps = 0;
     int counter = 0;
-    double* new_lst = (double*) malloc(list_size*sizeof(double));
+    double* new_lst = (double*) malloc(30*list_size*sizeof(double));
+    for(int i =0; i < list_size*30;i++){
+	new_lst[i] = 0.0; 
+    }
 
     while(fgets(line, 1024, stream)){
+	//char* new_val = (char*) malloc(sizeof(char)*1024);
         char* new_val = strtok(line,",");
         value = strtod(new_val,NULL);
         new_lst[counter] = (double) value;
         counter += 1;
     }
+    fclose(stream);
     return new_lst;
 }
 
@@ -109,6 +116,7 @@ int initialize_named_params(){
         value = atof(strtok(line,","));
         counter += 1;
     }
+    fclose(stream);
     return 0;
 }
 
