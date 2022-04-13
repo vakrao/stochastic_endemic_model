@@ -68,7 +68,7 @@ void stoch_model(double vv, int run_number,char* fileName){
     const double VC1 = 0.5; 
     const double VC2 = 0.9;
     //school and variant variables 
-    const double variant_start = 300;
+    const double variant_start = 0;
     const int school_spring = 150; 
     const int school_break = 95; 
     const int school_fall = 120;
@@ -289,7 +289,7 @@ void stoch_model(double vv, int run_number,char* fileName){
     // Setting values for theta, mu, and m
     for(int i = 0; i < AGES; i++){
         theta[i] = 0;
-        mu_i1[i] = mu_i1[i] / 1000.0;
+        mu_i1[i] = mu_i1[i] / 100.0;
         mu_i2[i] = mu_i1[i] * ifr_i2_scale;
         m[i] = m[i] / 365.0;
         m[i] = m[i] * 5.0;
@@ -416,7 +416,7 @@ void stoch_model(double vv, int run_number,char* fileName){
                     S[rand_number] = S[rand_number] -  1; 
                     I2[rand_number] = I2[rand_number] + 1; 
                 }
-            }`
+            }
             q2 = q2_value;
         }
         else{
@@ -472,8 +472,13 @@ void stoch_model(double vv, int run_number,char* fileName){
         }
         else{
             if(t  == 0){
-                S[25] = S[25] - 1;
-                I1[25] = I1[25] + 1; 
+            	for(int i = 0 ; i < new_yearly_imports; i++){
+            	    rand_number = rand() % AGES;
+            	    if(S[rand_number] > 0){
+            	        S[rand_number] -= 1; 
+            	        I1[rand_number] += 1; 
+            	    }
+            	}
             }
         }
 
@@ -485,6 +490,8 @@ void stoch_model(double vv, int run_number,char* fileName){
             double lambda2 = find_lambda(q2,i,sigma_red_i2,I2,VI2,M,N,S);
             double lambda_mean = (S[i] * lambda1);
             Xsi1[i] =  poisson_draw(r,lambda_mean,S[i]);
+            fprintf(stderr,"NEW INFECTIONS: %f",Xsi1[i]);
+	    fflush(stderr): 
             if(S[i] - Xsi1[i] >= 1){
                 temp_transition = (S[i] - Xsi1[i]);
                 Xsi2[i] = poisson_draw(r,temp_transition*lambda2,temp_transition);
@@ -957,7 +964,7 @@ void stoch_model(double vv, int run_number,char* fileName){
     free(XD);
     for(int i = 0;  i < AGES; i++){
         free(cm_overall[i]);
-    //    free(cm_school[i]);
+        free(cm_school[i]);
         free(M[i]);
     }
     free(cm_school);
