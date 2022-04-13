@@ -72,7 +72,7 @@ void stoch_model(double vv, int run_number,char* fileName){
     const int school_spring = 150; 
     const int school_break = 95; 
     const int school_fall = 120;
-    const int vaccine_start = school_end + school_break;
+    const int vaccine_start = school_spring + school_break;
     const int first_vax_seas_dur = 100;
     const int perm_vax_seas_dur = 60;
     const double R01 = 5; 
@@ -172,10 +172,10 @@ void stoch_model(double vv, int run_number,char* fileName){
                 if(j < vaccine_start){
                     psi[psi_counter] = 0; 
                 }
-                if(j >= vaccine_start && j < (vaccine_start + first_year_vax_dur)){
+                if(j >= vaccine_start && j < (vaccine_start + first_vax_seas_dur)){
                     psi[psi_counter] = 1; 
                 }
-                if(j >= (vaccine_start + first_year_vax_dur)){
+                if(j >= (vaccine_start + first_vax_seas_dur)){
                     psi[psi_counter] = 0;
                 }
             }
@@ -393,14 +393,14 @@ void stoch_model(double vv, int run_number,char* fileName){
     //Time loop starts here
     while(t < ft){
 	// School contact matrix control flow
-	if(t %% (school_spring) == 0 ){
+	if(t % (school_spring) == 0 ){
 	    for(int i = 0; i < AGES; i++){
 	       for(int j = 0; j < AGES; j++){
 		   M[i][j] -= cm_school[i][j];
 		}
 	    }
 	}
-	if(t %% (school_spring + school_break) == 0 ){
+	if(t % (school_spring + school_break) == 0 ){
 	    for(int i = 0; i < AGES; i++){
 	       for(int j = 0; j < AGES; j++){
 		   M[i][j] += cm_school[i][j];
@@ -490,8 +490,6 @@ void stoch_model(double vv, int run_number,char* fileName){
             double lambda2 = find_lambda(q2,i,sigma_red_i2,I2,VI2,M,N,S);
             double lambda_mean = (S[i] * lambda1);
             Xsi1[i] =  poisson_draw(r,lambda_mean,S[i]);
-            fprintf(stderr,"NEW INFECTIONS: %f",Xsi1[i]);
-	    fflush(stderr): 
             if(S[i] - Xsi1[i] >= 1){
                 temp_transition = (S[i] - Xsi1[i]);
                 Xsi2[i] = poisson_draw(r,temp_transition*lambda2,temp_transition);
@@ -861,7 +859,7 @@ void stoch_model(double vv, int run_number,char* fileName){
         total_lambda = 0;
 
         for(int c = 0; c < AGES; c++){
-	    XD[i] = 0; 
+	        XD[c] = 0; 
             Xsi1[c] = 0;
             Xsi2[c] = 0;
             Xr1[c] = 0;
