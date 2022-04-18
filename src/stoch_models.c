@@ -68,7 +68,7 @@ void stoch_model(double vv, int run_number,char* fileName){
     const double VC1 = 0.5; 
     const double VC2 = 0.9;
     //school and variant variables 
-    const double variant_start = 0;
+    const double variant_start = -10;
     const int school_spring = 150; 
     const int school_break = 95; 
     const int school_fall = 120;
@@ -166,6 +166,7 @@ void stoch_model(double vv, int run_number,char* fileName){
     int psi_counter = 0;
     int perm_unvax_period = school_spring + school_break;
     int perm_vax_period = perm_vax_period + perm_vax_seas_dur;
+    // vaccine seasonaity loop
     for(int i = 0; i < years; i++){
         for(int j = 0; j < 365; j++){
             if( i == 0){
@@ -396,17 +397,17 @@ void stoch_model(double vv, int run_number,char* fileName){
 	if(t % (school_spring) == 0 ){
 	    for(int i = 0; i < AGES; i++){
 	       for(int j = 0; j < AGES; j++){
-		   M[i][j] -= cm_school[i][j];
-		}
+		       M[i][j] -= cm_school[i][j];
+	     	}
 	    }
 	}
 	if(t % (school_spring + school_break) == 0 ){
 	    for(int i = 0; i < AGES; i++){
 	       for(int j = 0; j < AGES; j++){
-		   M[i][j] += cm_school[i][j];
-		}
+                M[i][j] += cm_school[i][j];
+	     	}
 	    }
-        }
+     }
 	// Variant control flow 
         if(t == variant_start){
             R02 = variant_start_R02;
@@ -457,12 +458,18 @@ void stoch_model(double vv, int run_number,char* fileName){
             }
          }
          else{
+            int generate = 0;
             for(int i = 0 ; i < new_yearly_imports; i++){
-                rand_number = rand() % AGES;
-                if(S[rand_number] > 0){
-                    S[rand_number] -= 1; 
-                    I2[rand_number] += 1; 
-                }
+                while(generate == 0){
+                    rand_number = rand() % AGES;
+                     
+                    if(S[rand_number] > 0){
+                        S[rand_number] -= 1; 
+                        I1[rand_number] += 1; 
+                        generate = 1;
+                    }
+               }
+               generate = 0;
             }
          }
          for(int k=0; k < AGES; k++){
@@ -513,11 +520,9 @@ void stoch_model(double vv, int run_number,char* fileName){
             else{
                 SD[i] = 0;
            }
-           // V comparment exit logic
+           // V compartment exit logic
            Vs[i] = poisson_draw(r,V[i]*(1/time_of_immunity),V[i]);
 
-            // sigma_i1 = sigma_i1
-            // ve2 = sigma_i2
             if(V[i] - Vs[i] >= 1){
                 temp_transition = V[i] - Vs[i];
                 Xvvi1[i] = poisson_draw(r,temp_transition * lambda1 * (1-sigma_i1),temp_transition);
@@ -714,7 +719,7 @@ void stoch_model(double vv, int run_number,char* fileName){
             }
 
            Xvr1vi2[i] = poisson_draw(r,VR1[i]*(1-VC1)*lambda2*sigma_red_i1,VR1[i]); 
-	   //Vaccine Recovered One Comaprtment Logic
+     	   //Vaccine Recovered One Comaprtment Logic
            if(VR1[i] - Xvr1vi2[i] >= 1){
                temp_transition = VR1[i] - Xvr1vi2[i];
                omega3[i] = poisson_draw(r,temp_transition*(1/time_of_immunity),temp_transition);
@@ -802,10 +807,6 @@ void stoch_model(double vv, int run_number,char* fileName){
             fprintf(fptr,"t,vv,age,value,vartype\n");
         }
 
-//        if(t == 0){
-//            fprintf(fptr,"t,vv,value,vartype\n");
-//        }
-
 
         for(int i = 0; i < AGES; i++){
             S[i] = S[i] + Vs[i] + omega1[i] + omega2[i] + omega3[i] + omega4[i] - Xsi1[i] - Xsi2[i] - sv[i] - SD[i] + SB[i] + IS[i];
@@ -851,10 +852,6 @@ void stoch_model(double vv, int run_number,char* fileName){
           fprintf(fptr,"%d,%.2f,%d,%f,H2\n",t,vv,i,H2[i]);
 
         }
-
-        
- //        fprintf(stderr,"TOTAL MORT: %f, TOTAL BIRTHS: %f \n",total(D),total(SB));
- //        fflush(stderr);
 
         total_lambda = 0;
 
@@ -930,8 +927,6 @@ void stoch_model(double vv, int run_number,char* fileName){
         }
         t += 1;
     }
-   // fprintf(stderr,"FINISHED STOCH");
-    //fflush(stderr);
     free(m);
     free(mu_i1);
     free(mu_i2);
@@ -972,15 +967,6 @@ void stoch_model(double vv, int run_number,char* fileName){
     fclose(fptr);
     return; 
 }
-   //fprintf(stderr,"STARTING TO ENTER LOOP!");
-   //fflush(stderr);
-//    for(int c = 0; c < AGES; c++){
-//        fprintf(stderr,"VI VALS: %f",VI1[c]);
-//        fflush(stderr);
-//    }
-
-    // set all transition arrays to zero
-
 
     //oupu becomes massive due o many years 
     //print only wha's needed 
