@@ -142,7 +142,7 @@ double* assign_hospitalization(float ti_icu, float* ICU_ratio,int ages){
 
 char* generate_names(int vv_value, int stoch_number){
     char* new_string =  (char*) malloc(100*sizeof(char));
-    sprintf(new_string,"run_%d_%d0.csv",stoch_number,vv_value);
+    sprintf(new_string,"noage_run_%d_%d0.csv",stoch_number,vv_value);
     return new_string;
 
 }

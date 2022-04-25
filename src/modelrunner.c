@@ -62,20 +62,21 @@ int main(int argc, char* argv[]){
     char* new_file = (char*)malloc(sizeof(char)*90);
     csv_title = ".csv";
 
-    int vaccine_configs = 5;
+    int vaccine_configs = 11;
     int starting_config = 0;
-    //#pragma omp parallel
     //Vaccine configs, relates to all the different vaccine percentages
     	for(int i = starting_config; i < vaccine_configs; i++){
+            fprintf(stderr,"Vaccine value: %lf",vv_values[i]);
+            fflush(stderr);
     	    //Running each vaccine percentage for number given by sim_number
-    	    for(int j = 0; j < run_number+1; j++){
-    	       new_file = generate_names(i,j);
-    	       stoch_model(vv_values[i],j,new_file);
-    	       fprintf(stderr,"FINISHED VV %d, RUN %d \n",i,j);
-    	       fflush(stderr);
-	           free(new_file);
-    	    }
-	        new_file = (char*)malloc(sizeof(char)*90);
+    	    //for(int j = 0; j < run_number+1; j++){
+    	    //   new_file = generate_names(i,j);
+    	    //   stoch_model(vv_values[i],j,new_file);
+    	    //   fprintf(stderr,"FINISHED VV %d, RUN %d \n",vv_values[i],j);
+    	    //   fflush(stderr);
+	        //   free(new_file);
+    	    //}
+	        //ew_file = (char*)malloc(sizeof(char)*90);
     	}
    
     seconds = time(NULL);

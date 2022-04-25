@@ -18,6 +18,49 @@
 // run number is used o name he files
 // Need to add dynamic vax changing
 
+//struct params{
+//  const int AGES = 85;                                    
+//  const double birth_rate = .012/365.0;
+//  //reduction in infectiousness for multiple strains
+//  const double sigma_red_i1= 0.5;
+//  const double sigma_red_i2= 0.5;
+//  //vaccine protection against infection 
+//  const double sigma_i1 = 0.5;
+//  const double sigma_i2 = 0.4;
+//  //vaccine protection against hosptilaization 
+//  const double sigma_h1 = 0.9; 
+//  const double sigma_h2 = 0.9; 
+//  //vaccine protection against death 
+//  const double sigma_d1 = 0.95; 
+//  const double sigma_d2 = 0.95; 
+//  const double C1 = 0.5;
+//  const double C2 = 0.9;
+//  const int years = 20; 
+//  //hospitalization waning recovery rate
+//  const double zeta = 0.125;
+//  const double ti_icu = 8;
+//  const int ft = years*365;
+//  const double VC1 = 0.5; 
+//  const double VC2 = 0.9;
+//  //school and variant variables 
+//  const double variant_start = -10;
+//  const int school_spring = 150; 
+//  const int school_break = 95; 
+//  const int school_fall = 120;
+//  const int vaccine_start = school_spring + school_break;
+//  const int first_vax_seas_dur = 100;
+//  const int perm_vax_seas_dur = 60;
+//  const double R01 = 5; 
+//  const double gamma = 0.1587;
+//  // immunity values
+//  const double time_of_waning_natural = 200;
+//  const double time_of_immunity = 200;
+//  const double variant_start_R02 = 0;
+//  double age_based_coverage[AGES];
+//}
+
+
+
 double poisson_draw(gsl_rng *r,double mu, double max_value){
 //    fprintf(stderr,"MU: %f",mu);
 //    fflush(stderr);
@@ -77,8 +120,9 @@ void stoch_model(double vv, int run_number,char* fileName){
     const int perm_vax_seas_dur = 60;
     const double R01 = 5; 
     const double gamma = 0.1587;
-    const double time_of_waning_natural = 365;
-    const double time_of_immunity = 2*365;
+    // immunity values
+    const double time_of_waning_natural = 200;
+    const double time_of_immunity = 200;
     const double variant_start_R02 = 0;
     double age_based_coverage[AGES];
    
@@ -91,13 +135,7 @@ void stoch_model(double vv, int run_number,char* fileName){
     T = gsl_rng_default;
     r = gsl_rng_alloc(gsl_rng_default);
     gsl_rng_set(r,value);
-    int truncated_percent = trunc(vv);
-    if(truncated_percent > 4 && truncated_percent < 11){
-        truncated_percent = truncated_percent - 1;
-    }
-    else{
-        truncated_percent = 10;
-    }
+    
     for(int i = 0; i < AGES; i++){
 	age_based_coverage[i] = 0; 
     }
@@ -198,13 +236,11 @@ void stoch_model(double vv, int run_number,char* fileName){
     // Be specific abou names 
     // Be super-general abou names...? Use 3-d array 
 
-    const float q1 = 0.0544;
+    const float q1 = .0531397;
     float R02 = 0;
     int t = 0;
     float q2  = 0;
     const float q2_value = 0;
-    const double ime_vax_immuniy = years*2; 
-    const double ime_wanintg_naural = years*2;
 
     double Xr1[AGES];
     double Y1[AGES];
@@ -385,10 +421,6 @@ void stoch_model(double vv, int run_number,char* fileName){
    t = 0;
    fprintf(stderr,"STARTING TO ENTER LOOP!");
    fflush(stderr);
-//    for(int c = 0; c < AGES; c++){
-//        fprintf(stderr,"VI VALS: %f",VI1[c]);
-//        fflush(stderr);
-//    }
     double total_lambda = 0;
     int rand_number = 0;
     //Time loop starts here
@@ -448,6 +480,7 @@ void stoch_model(double vv, int run_number,char* fileName){
           VR1= ageing(VR1, AGES);
           VR2= ageing(VR2, AGES);
           S[0] = 1;
+          // Importation logic
          if(t < variant_start){
             for(int i = 0 ; i < new_yearly_imports; i++){
                 rand_number = rand() % AGES;
@@ -505,6 +538,7 @@ void stoch_model(double vv, int run_number,char* fileName){
                 Xsi2[i] = 0;
             }
 
+            // S -> V compartment exit logic
             if(S[i] - Xsi1[i] - Xsi2[i] >= 1){
                 temp_transition = (S[i] - Xsi1[i] - Xsi2[i]);
                 sv[i] = poisson_draw(r,temp_transition*psi[t]*age_based_coverage[i],temp_transition);
@@ -803,9 +837,17 @@ void stoch_model(double vv, int run_number,char* fileName){
             }
         }
 
-        if(t == 0){
-            fprintf(fptr,"t,vv,age,value,vartype\n");
-        }
+//        if(t == 0){
+//            fprintf(fptr,"t,vv,age,value,vartype\n");
+//        }
+//
+//
+//
+//
+//
+       if(t == 0){
+           fprintf(fptr,"t,vv,value,vartype\n");
+       }
 
 
         for(int i = 0; i < AGES; i++){
@@ -831,28 +873,48 @@ void stoch_model(double vv, int run_number,char* fileName){
 //	    XDI[i] = Di1[i] + Di2[i]; 
  //           XDVI[i] = DVi1[i] + DVi2[i];
 
-//        fprintf(stderr,"N: %lf \n",N[i]);
 
-
-          fprintf(fptr,"%d,%.2f,%d,%f,N\n",t,vv,i,N[i]);
-          fprintf(fptr,"%d,%.2f,%d,%f,S\n",t,vv,i,S[i]);
-          fprintf(fptr,"%d,%.2f,%d,%f,I1\n",t,vv,i,I1[i]);
-          fprintf(fptr,"%d,%.2f,%d,%f,I2\n",t,vv,i,I2[i]);
-          fprintf(fptr,"%d,%.2f,%d,%f,R1\n",t,vv,i,R1[i]);
-          fprintf(fptr,"%d,%.2f,%d,%f,R2\n",t,vv,i,R2[i]);
-          fprintf(fptr,"%d,%.2f,%d,%f,V\n",t,vv,i,V[i]);
-          fprintf(fptr,"%d,%.2f,%d,%f,XIVI1\n",t,vv,i,XIV1[i]);
-          fprintf(fptr,"%d,%.2f,%d,%f,XIV2\n",t,vv,i,XIV2[i]);
-          fprintf(fptr,"%d,%.2f,%d,%f,Xsi1\n",t,vv,i,Xsi1[i]);
-          fprintf(fptr,"%d,%.2f,%d,%f,Xsi2\n",t,vv,i,Xsi2[i]);
-          fprintf(fptr,"%d,%.2f,%d,%f,XD\n",t,vv,i,XD[i]);
-          fprintf(fptr,"%d,%.2f,%d,%f,VR1\n",t,vv,i,VR1[i]);
-         fprintf(fptr,"%d,%.2f,%d,%f,VR2\n",t,vv,i,VR2[i]);
-          fprintf(fptr,"%d,%.2f,%d,%f,H1\n",t,vv,i,H1[i]);
-          fprintf(fptr,"%d,%.2f,%d,%f,H2\n",t,vv,i,H2[i]);
-
+//          Age-based data-saving
+          
+//          fprintf(fptr,"%d,%.2f,%d,%f,N\n",t,vv,i,N[i]);
+//          fprintf(fptr,"%d,%.2f,%d,%f,S\n",t,vv,i,S[i]);
+//          fprintf(fptr,"%d,%.2f,%d,%f,I1\n",t,vv,i,I1[i]);
+//          fprintf(fptr,"%d,%.2f,%d,%f,I2\n",t,vv,i,I2[i]);
+//          fprintf(fptr,"%d,%.2f,%d,%f,R1\n",t,vv,i,R1[i]);
+//          fprintf(fptr,"%d,%.2f,%d,%f,R2\n",t,vv,i,R2[i]);
+//          fprintf(fptr,"%d,%.2f,%d,%f,V\n",t,vv,i,V[i]);
+//          fprintf(fptr,"%d,%.2f,%d,%f,XIVI1\n",t,vv,i,XIV1[i]);
+//          fprintf(fptr,"%d,%.2f,%d,%f,XIV2\n",t,vv,i,XIV2[i]);
+//          fprintf(fptr,"%d,%.2f,%d,%f,Xsi1\n",t,vv,i,Xsi1[i]);
+//          fprintf(fptr,"%d,%.2f,%d,%f,Xsi2\n",t,vv,i,Xsi2[i]);
+//          fprintf(fptr,"%d,%.2f,%d,%f,XD\n",t,vv,i,XD[i]);
+//          fprintf(fptr,"%d,%.2f,%d,%f,VR1\n",t,vv,i,VR1[i]);
+//          fprintf(fptr,"%d,%.2f,%d,%f,VR2\n",t,vv,i,VR2[i]);
+//          fprintf(fptr,"%d,%.2f,%d,%f,H1\n",t,vv,i,H1[i]);
+//          fprintf(fptr,"%d,%.2f,%d,%f,H2\n",t,vv,i,H2[i]);
+//
         }
 
+//          Total Age Agnostic data-saving
+        fprintf(stderr,"Xsi1: %lf \n",total(Xsi1));
+        fflush(stderr);
+        fprintf(fptr,"%d,%.2f,%f,N\n",t,vv,total(N));
+        fprintf(fptr,"%d,%.2f,%f,S\n",t,vv,total(S));
+        fprintf(fptr,"%d,%.2f,%f,I1\n",t,vv,total(I1));
+        fprintf(fptr,"%d,%.2f,%f,I2\n",t,vv,total(I2));
+        fprintf(fptr,"%d,%.2f,%f,R1\n",t,vv,total(R1));
+        fprintf(fptr,"%d,%.2f,%f,R2\n",t,vv,total(R2));
+        fprintf(fptr,"%d,%.2f,%f,V\n",t,vv,total(V));
+        fprintf(fptr,"%d,%.2f,%f,XIVI1\n",t,vv,total(XIV1));
+        fprintf(fptr,"%d,%.2f,%f,XIV2\n",t,vv,total(XIV2));
+        fprintf(fptr,"%d,%.2f,%f,Xsi1\n",t,vv,total(Xsi1));
+        fprintf(fptr,"%d,%.2f,%f,Xsi2\n",t,vv,total(Xsi2));
+        fprintf(fptr,"%d,%.2f,%f,XD\n",t,vv,total(XD));
+        fprintf(fptr,"%d,%.2f,%f,VR1\n",t,vv,total(VR1));
+        fprintf(fptr,"%d,%.2f,%f,VR2\n",t,vv,total(VR2));
+        fprintf(fptr,"%d,%.2f,%f,H1\n",t,vv,total(H1));
+        fprintf(fptr,"%d,%.2f,%f,H2\n",t,vv,total(H2));
+        
         total_lambda = 0;
 
         for(int c = 0; c < AGES; c++){

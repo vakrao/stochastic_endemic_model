@@ -12,8 +12,8 @@ if __name__=="__main__":
     print("hello!")
     total_mean_name = "total_mean_vax_levels.csv"
     total_quantile_name = "total_quantile_vax_levels.csv"
-    n = 11
-    starting_config = 10
+    n = 1
+    starting_config = 0
     for k in range(starting_config,n):
         string_val = str(k)
         title_name = "run_*_"+string_val+"0.csv"
