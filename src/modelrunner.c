@@ -57,31 +57,27 @@ int main(int argc, char* argv[]){
     // year than any other year 
     //initialize gsl random environment
     char* dynamic_title = (char*) malloc(sizeof(char)*100);
-    char* dynamic_vv = (char*) malloc(sizeof(char)*100);
-    char* csv_title = (char*)malloc(sizeof(char)*20);
     char* new_file = (char*)malloc(sizeof(char)*90);
-    csv_title = ".csv";
 
     int vaccine_configs = 11;
-    int starting_config = 0;
+    int starting_config = 5;
     //Vaccine configs, relates to all the different vaccine percentages
     	for(int i = starting_config; i < vaccine_configs; i++){
-            fprintf(stderr,"Vaccine value: %lf",vv_values[i]);
+            int vax_percent = i * 10;
+            fprintf(stderr,"Vaccine value: %lf, Percentage: %d \n",vv_values[i],vax_percent);
             fflush(stderr);
     	    //Running each vaccine percentage for number given by sim_number
-    	    //for(int j = 0; j < run_number+1; j++){
-    	    //   new_file = generate_names(i,j);
-    	    //   stoch_model(vv_values[i],j,new_file);
-    	    //   fprintf(stderr,"FINISHED VV %d, RUN %d \n",vv_values[i],j);
-    	    //   fflush(stderr);
-	        //   free(new_file);
-    	    //}
-	        //ew_file = (char*)malloc(sizeof(char)*90);
+    	    for(int j = 0; j < run_number+1; j++){
+    	       new_file = generate_names(i,j);
+    	       stoch_model(vv_values[i],j,new_file);
+	           free(new_file);
+    	    } 
+	        new_file = (char*)malloc(sizeof(char)*90);
     	}
-   
+    free(vv_values);
+    free(dynamic_title);
+    free(new_file);
     seconds = time(NULL);
     printf("MODEL DONE IN: %ld \n",seconds);
-
-
     
 }

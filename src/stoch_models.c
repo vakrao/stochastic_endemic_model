@@ -108,6 +108,7 @@ void stoch_model(double vv, int run_number,char* fileName){
     const double zeta = 0.125;
     const double ti_icu = 8;
     const int ft = years*365;
+//    const int ft = 10*365;
     const double VC1 = 0.5; 
     const double VC2 = 0.9;
     //school and variant variables 
@@ -137,7 +138,7 @@ void stoch_model(double vv, int run_number,char* fileName){
     gsl_rng_set(r,value);
     
     for(int i = 0; i < AGES; i++){
-	age_based_coverage[i] = 0; 
+	    age_based_coverage[i] = 0; 
     }
     //assigning vaccine percentages based on age
     for(int i = 0; i < AGES; i++){
@@ -426,46 +427,46 @@ void stoch_model(double vv, int run_number,char* fileName){
     //Time loop starts here
     while(t < ft){
 	// School contact matrix control flow
-	if(t % (school_spring) == 0 ){
-	    for(int i = 0; i < AGES; i++){
-	       for(int j = 0; j < AGES; j++){
-		       M[i][j] -= cm_school[i][j];
-	     	}
+	    if(t % (school_spring) == 0 ){
+	        for(int i = 0; i < AGES; i++){
+	           for(int j = 0; j < AGES; j++){
+	    	       M[i][j] -= cm_school[i][j];
+	         	}
+	        }
 	    }
-	}
-	if(t % (school_spring + school_break) == 0 ){
-	    for(int i = 0; i < AGES; i++){
-	       for(int j = 0; j < AGES; j++){
-                M[i][j] += cm_school[i][j];
-	     	}
-	    }
-     }
-	// Variant control flow 
+	    if(t % (school_spring + school_break) == 0 ){
+	        for(int i = 0; i < AGES; i++){
+	           for(int j = 0; j < AGES; j++){
+                    M[i][j] += cm_school[i][j];
+	         	}
+	        }
+         }
+	    // Variant control flow 
         if(t == variant_start){
             R02 = variant_start_R02;
-            for(int i = 0 ; i < new_yearly_imports; i++){
-                rand_number = rand() % AGES;
-                if(S[rand_number] > 0){
-                    S[rand_number] = S[rand_number] -  1; 
-                    I2[rand_number] = I2[rand_number] + 1; 
-                }
-            }
-            q2 = q2_value;
-        }
-        else{
-            if(t < variant_start && t == 0){
-                for(int i = 0 ; i < new_yearly_imports; i++){
-                    rand_number = rand() % AGES;
-                    if(S[rand_number] > 0){
-                        S[rand_number] = S[rand_number] - 1; 
-                        I1[rand_number] = I2[rand_number] + 1; 
+             for(int i = 0 ; i < new_yearly_imports; i++){
+                 rand_number = rand() % AGES;
+                 if(S[rand_number] > 0){
+                     S[rand_number] = S[rand_number] -  1; 
+                     I2[rand_number] = I2[rand_number] + 1; 
+                 }
+             }
+             q2 = q2_value;
+         }
+           else{
+                if(t < variant_start && t == 0){
+                    for(int i = 0 ; i < new_yearly_imports; i++){
+                        rand_number = rand() % AGES;
+                        if(S[rand_number] > 0){
+                            S[rand_number] = S[rand_number] - 1; 
+                            I1[rand_number] = I2[rand_number] + 1; 
+                        }
                     }
+                   q2 = 0;  
                 }
-               q2 = 0;  
             }
-        }
 
-        // Ageing Loop
+            // Ageing Loop
         if(t % 365 == 0  & t != 0){
           S = ageing(S, AGES);
           I1 = ageing(I1, AGES);
@@ -524,7 +525,7 @@ void stoch_model(double vv, int run_number,char* fileName){
 
         // Stochasic Age-Transition Loop
         for(int i=0; i < AGES; i++){
-	    // Determining attack rate!
+	      // Determining attack rate!
             double lambda1 = find_lambda(q1,i,sigma_red_i1,I1,VI1,M,N,S);
             total_lambda += lambda1;
             double lambda2 = find_lambda(q2,i,sigma_red_i2,I2,VI2,M,N,S);
@@ -837,14 +838,6 @@ void stoch_model(double vv, int run_number,char* fileName){
             }
         }
 
-//        if(t == 0){
-//            fprintf(fptr,"t,vv,age,value,vartype\n");
-//        }
-//
-//
-//
-//
-//
        if(t == 0){
            fprintf(fptr,"t,vv,value,vartype\n");
        }
@@ -896,8 +889,6 @@ void stoch_model(double vv, int run_number,char* fileName){
         }
 
 //          Total Age Agnostic data-saving
-        fprintf(stderr,"Xsi1: %lf \n",total(Xsi1));
-        fflush(stderr);
         fprintf(fptr,"%d,%.2f,%f,N\n",t,vv,total(N));
         fprintf(fptr,"%d,%.2f,%f,S\n",t,vv,total(S));
         fprintf(fptr,"%d,%.2f,%f,I1\n",t,vv,total(I1));
@@ -917,6 +908,9 @@ void stoch_model(double vv, int run_number,char* fileName){
         
         total_lambda = 0;
 
+        //Dynamically assingn vv
+        // vv = dynamic_vv()
+        //zero out all transitions
         for(int c = 0; c < AGES; c++){
 	        XD[c] = 0; 
             Xsi1[c] = 0;
@@ -989,6 +983,7 @@ void stoch_model(double vv, int run_number,char* fileName){
         }
         t += 1;
     }
+    // now, we free all associated memory
     free(m);
     free(mu_i1);
     free(mu_i2);
