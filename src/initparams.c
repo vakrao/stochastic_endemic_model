@@ -106,13 +106,16 @@ double* initialize_unique_csv(int list_size,const char* filename,double *lst){
     return new_lst;
 }
 
-int initialize_named_params(){
-    FILE* stream = fopen("sim_params.csv","r");
+int initialize_named_params(const char* filename, ParameterSet p){
+    FILE* stream = fopen(filename,"r");
     char line[300];
+    char *token; 
     float value = 0;
     int reps = 0;
     int counter = 0;
-    while(fgets(line, 1024, stream)){
+    while(feof(fp) != true){
+        fgets(line, 300, fp);
+        token = strtok(line, ",");
         value = atof(strtok(line,","));
         counter += 1;
     }
@@ -142,7 +145,7 @@ double* assign_hospitalization(float ti_icu, float* ICU_ratio,int ages){
 
 char* generate_names(int vv_value, int stoch_number){
     char* new_string =  (char*) malloc(100*sizeof(char));
-    sprintf(new_string,"noage_run_%d_%d0.csv",stoch_number,vv_value);
+    sprintf(new_string,"age_run_%d_%d0.csv",stoch_number,vv_value);
     return new_string;
 
 }

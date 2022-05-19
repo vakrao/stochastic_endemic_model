@@ -839,7 +839,7 @@ void stoch_model(double vv, int run_number,char* fileName){
         }
 
        if(t == 0){
-           fprintf(fptr,"t,vv,value,vartype\n");
+           fprintf(fptr,"t,vv,age,value,sim_number,vartype\n");
        }
 
 
@@ -868,44 +868,44 @@ void stoch_model(double vv, int run_number,char* fileName){
 
 
 //          Age-based data-saving
-          
-//          fprintf(fptr,"%d,%.2f,%d,%f,N\n",t,vv,i,N[i]);
-//          fprintf(fptr,"%d,%.2f,%d,%f,S\n",t,vv,i,S[i]);
-//          fprintf(fptr,"%d,%.2f,%d,%f,I1\n",t,vv,i,I1[i]);
-//          fprintf(fptr,"%d,%.2f,%d,%f,I2\n",t,vv,i,I2[i]);
-//          fprintf(fptr,"%d,%.2f,%d,%f,R1\n",t,vv,i,R1[i]);
-//          fprintf(fptr,"%d,%.2f,%d,%f,R2\n",t,vv,i,R2[i]);
-//          fprintf(fptr,"%d,%.2f,%d,%f,V\n",t,vv,i,V[i]);
-//          fprintf(fptr,"%d,%.2f,%d,%f,XIVI1\n",t,vv,i,XIV1[i]);
-//          fprintf(fptr,"%d,%.2f,%d,%f,XIV2\n",t,vv,i,XIV2[i]);
-//          fprintf(fptr,"%d,%.2f,%d,%f,Xsi1\n",t,vv,i,Xsi1[i]);
-//          fprintf(fptr,"%d,%.2f,%d,%f,Xsi2\n",t,vv,i,Xsi2[i]);
-//          fprintf(fptr,"%d,%.2f,%d,%f,XD\n",t,vv,i,XD[i]);
-//          fprintf(fptr,"%d,%.2f,%d,%f,VR1\n",t,vv,i,VR1[i]);
-//          fprintf(fptr,"%d,%.2f,%d,%f,VR2\n",t,vv,i,VR2[i]);
-//          fprintf(fptr,"%d,%.2f,%d,%f,H1\n",t,vv,i,H1[i]);
-//          fprintf(fptr,"%d,%.2f,%d,%f,H2\n",t,vv,i,H2[i]);
-//
-        }
+        
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,i,N[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,S\n",t,vv,i,S[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,I1\n",t,vv,i,I1[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,I2\n",t,vv,i,I2[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,R1\n",t,vv,i,R1[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,R2\n",t,vv,i,R2[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,V\n",t,vv,i,V[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,XIVI1\n",t,vv,i,XIV1[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,XIV2\n",t,vv,i,XIV2[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi1\n",t,vv,i,Xsi1[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi2\n",t,vv,i,Xsi2[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,XD\n",t,vv,i,XD[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,VR1\n",t,vv,i,VR1[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,VR2\n",t,vv,i,VR2[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,H1\n",t,vv,i,H1[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,H2\n",t,vv,i,H2[i],run_number);
+
+      }
 
 //          Total Age Agnostic data-saving
-        fprintf(fptr,"%d,%.2f,%f,N\n",t,vv,total(N));
-        fprintf(fptr,"%d,%.2f,%f,S\n",t,vv,total(S));
-        fprintf(fptr,"%d,%.2f,%f,I1\n",t,vv,total(I1));
-        fprintf(fptr,"%d,%.2f,%f,I2\n",t,vv,total(I2));
-        fprintf(fptr,"%d,%.2f,%f,R1\n",t,vv,total(R1));
-        fprintf(fptr,"%d,%.2f,%f,R2\n",t,vv,total(R2));
-        fprintf(fptr,"%d,%.2f,%f,V\n",t,vv,total(V));
-        fprintf(fptr,"%d,%.2f,%f,XIVI1\n",t,vv,total(XIV1));
-        fprintf(fptr,"%d,%.2f,%f,XIV2\n",t,vv,total(XIV2));
-        fprintf(fptr,"%d,%.2f,%f,Xsi1\n",t,vv,total(Xsi1));
-        fprintf(fptr,"%d,%.2f,%f,Xsi2\n",t,vv,total(Xsi2));
-        fprintf(fptr,"%d,%.2f,%f,XD\n",t,vv,total(XD));
-        fprintf(fptr,"%d,%.2f,%f,VR1\n",t,vv,total(VR1));
-        fprintf(fptr,"%d,%.2f,%f,VR2\n",t,vv,total(VR2));
-        fprintf(fptr,"%d,%.2f,%f,H1\n",t,vv,total(H1));
-        fprintf(fptr,"%d,%.2f,%f,H2\n",t,vv,total(H2));
-        
+//        fprintf(fptr,"%d,%.2f,%f,N\n",t,vv,total(N));
+//        fprintf(fptr,"%d,%.2f,%f,S\n",t,vv,total(S));
+//        fprintf(fptr,"%d,%.2f,%f,I1\n",t,vv,total(I1));
+//        fprintf(fptr,"%d,%.2f,%f,I2\n",t,vv,total(I2));
+//        fprintf(fptr,"%d,%.2f,%f,R1\n",t,vv,total(R1));
+//        fprintf(fptr,"%d,%.2f,%f,R2\n",t,vv,total(R2));
+//        fprintf(fptr,"%d,%.2f,%f,V\n",t,vv,total(V));
+//        fprintf(fptr,"%d,%.2f,%f,XIVI1\n",t,vv,total(XIV1));
+//        fprintf(fptr,"%d,%.2f,%f,XIV2\n",t,vv,total(XIV2));
+//        fprintf(fptr,"%d,%.2f,%f,Xsi1\n",t,vv,total(Xsi1));
+//        fprintf(fptr,"%d,%.2f,%f,Xsi2\n",t,vv,total(Xsi2));
+//        fprintf(fptr,"%d,%.2f,%f,XD\n",t,vv,total(XD));
+//        fprintf(fptr,"%d,%.2f,%f,VR1\n",t,vv,total(VR1));
+//        fprintf(fptr,"%d,%.2f,%f,VR2\n",t,vv,total(VR2));
+//        fprintf(fptr,"%d,%.2f,%f,H1\n",t,vv,total(H1));
+//        fprintf(fptr,"%d,%.2f,%f,H2\n",t,vv,total(H2));
+//        
         total_lambda = 0;
 
         //Dynamically assingn vv

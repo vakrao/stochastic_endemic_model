@@ -32,28 +32,31 @@ echo '#### Running model! ####'
 gcc -c *.c 
 gcc -o model *.o -lgsl -lgslcblas -lm 
 #export OMP_NUM_THREADS=12
-srun model 10 0 
-srun model 10 10 
-srun model 10 20 
-srun model 10 30 
-srun model 10 40 
-srun model 10 50 
-srun model 10 60 
-srun model 10 70 
-srun model 10 80 
-srun model 10 90 
-srun model 10 100 
+srun model 30 0 
+srun model 30 10 
+srun model 30 20 
+srun model 30 30 
+srun model 30 40 
+srun model 30 50 
+srun model 30 60 
+srun model 30 70 
+srun model 30 80 
+srun model 30 90 
+srun model 30 100 
+rm *.o
 echo '### Moving files to another folder !'
 mv *.csv ../scripts/
 cd ../scripts/
 module load python
 #echo '###### Starting paste!######'
 python3 seq_csv.py
+mv agetotal_*.csv /N/project/endemic_covid/scripts/
+
 #echo '###### Finished paste!######'
 #echo '###### Starting mean!######'
-python3 find_mean.py
+#python3 age_mean.py
 #echo '###### Finished mean!######'
-zip -9 exp1_quantile total_sim_vax_level_quantile_*.csv
+#zip -9 exp1_quantile total_sim_vax_level_quantile_*.csv
 zip -9 exp1_mean total_sim_vax_level_mean_*.csv
 #zip -9 exp1_ages_mean total_sim_vax_ages_level_mean_*.csv
 #zip -9 exp1_ages_quantile total_sim_vax_ages_level_quantile_*.csv
