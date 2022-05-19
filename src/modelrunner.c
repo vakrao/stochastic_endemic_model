@@ -52,6 +52,7 @@ int main(int argc, char* argv[]){
     time_t seconds;
 
     int run_number = atoi(argv[1]);
+    int percent_number = atoi(argv[2]);
     // initializes psi, the vaccine coverage variable 
     // based on vaccinating more individuasl in the first 
     // year than any other year 
@@ -59,21 +60,18 @@ int main(int argc, char* argv[]){
     char* dynamic_title = (char*) malloc(sizeof(char)*100);
     char* new_file = (char*)malloc(sizeof(char)*90);
 
-    int vaccine_configs = 11;
-    int starting_config = 5;
     //Vaccine configs, relates to all the different vaccine percentages
-    	for(int i = starting_config; i < vaccine_configs; i++){
-            int vax_percent = i * 10;
-            fprintf(stderr,"Vaccine value: %lf, Percentage: %d \n",vv_values[i],vax_percent);
-            fflush(stderr);
-    	    //Running each vaccine percentage for number given by sim_number
-    	    for(int j = 0; j < run_number+1; j++){
-    	       new_file = generate_names(i,j);
-    	       stoch_model(vv_values[i],j,new_file);
-	           free(new_file);
-    	    } 
-	        new_file = (char*)malloc(sizeof(char)*90);
-    	}
+    int vax_percent = percent_number * 10;
+    fprintf(stderr,"Vaccine value: %lf, Percentage: %d \n",vv_values[i],vax_percent);
+    fflush(stderr);
+    //Running each vaccine percentage for number given by sim_number
+    int vv_index = percent_number/10;
+    for(int j = 0; j < run_number+1; j++){
+       new_file = generate_names(percent_number,j);
+       stoch_model(vv_values[vv_index],j,new_file);
+	   free(new_file);
+     } 
+	new_file = (char*)malloc(sizeof(char)*90);
     free(vv_values);
     free(dynamic_title);
     free(new_file);
