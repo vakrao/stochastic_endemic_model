@@ -42,6 +42,50 @@ extern const double time_of_immunity;
 extern double variant_start_R02;
 extern gsl_rng *r;
 
+struct ParamaterSet{
+ const int AGES = 85;                                    
+ const double birth_rate = .012/365.0;
+ //reduction in infectiousness for multiple strains
+ const double sigma_red_i1= 0.5;
+ const double sigma_red_i2= 0.5;
+ //vaccine protection against infection 
+ const double sigma_i1 = 0.5;
+ const double sigma_i2 = 0.4;
+ //vaccine protection against hosptilaization 
+ const double sigma_h1 = 0.9; 
+ const double sigma_h2 = 0.9; 
+ //vaccine protection against death 
+ const double sigma_d1 = 0.95; 
+ const double sigma_d2 = 0.95; 
+ const double C1 = 0.5;
+ const double C2 = 0.9;
+ const int years = 20; 
+ //hospitalization waning recovery rate
+ const double zeta = 0.125;
+ const double ti_icu = 8;
+ const int ft = years*365;
+ const double VC1 = 0.5; 
+ const double VC2 = 0.9;
+ //school and variant variables 
+ const double variant_start = -10;
+ const int school_spring = 150; 
+ const int school_break = 95; 
+ const int school_fall = 120;
+ const int vaccine_start = school_spring + school_break;
+ const int first_vax_seas_dur = 100;
+ const int perm_vax_seas_dur = 60;
+ const double R01 = 5; 
+ const double gamma = 0.1587;
+ // immunity values
+ const double time_of_waning_natural = 200;
+ const double time_of_immunity = 200;
+ const double variant_start_R02 = 0;
+ double age_based_coverage[AGES];
+};
+
+
+
+
 void initialize_repeated_csv(int list_size,const char* filename, double* lst){
     FILE* stream = fopen(filename,"r");
     char line[300];
