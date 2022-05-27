@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include<gsl/gsl_rng.h>  
+#include "initparams.h"
 //Make .csv files for
 //vv, ABR, TI_ICU, ICU_ratio, M, immigration_proprotion
 //anything else...?
@@ -41,48 +42,6 @@ extern const double time_of_waning_natural;
 extern const double time_of_immunity;
 extern double variant_start_R02;
 extern gsl_rng *r;
-
-struct ParamaterSet{
- const int AGES = 85;                                    
- const double birth_rate = .012/365.0;
- //reduction in infectiousness for multiple strains
- const double sigma_red_i1= 0.5;
- const double sigma_red_i2= 0.5;
- //vaccine protection against infection 
- const double sigma_i1 = 0.5;
- const double sigma_i2 = 0.4;
- //vaccine protection against hosptilaization 
- const double sigma_h1 = 0.9; 
- const double sigma_h2 = 0.9; 
- //vaccine protection against death 
- const double sigma_d1 = 0.95; 
- const double sigma_d2 = 0.95; 
- const double C1 = 0.5;
- const double C2 = 0.9;
- const int years = 20; 
- //hospitalization waning recovery rate
- const double zeta = 0.125;
- const double ti_icu = 8;
- const int ft = years*365;
- const double VC1 = 0.5; 
- const double VC2 = 0.9;
- //school and variant variables 
- const double variant_start = -10;
- const int school_spring = 150; 
- const int school_break = 95; 
- const int school_fall = 120;
- const int vaccine_start = school_spring + school_break;
- const int first_vax_seas_dur = 100;
- const int perm_vax_seas_dur = 60;
- const double R01 = 5; 
- const double gamma = 0.1587;
- // immunity values
- const double time_of_waning_natural = 200;
- const double time_of_immunity = 200;
- const double variant_start_R02 = 0;
- double age_based_coverage[AGES];
-};
-
 
 
 
@@ -136,7 +95,7 @@ double* initialize_unique_csv(int list_size,const char* filename,double *lst){
     int counter = 0;
     double* new_lst = (double*) malloc(30*list_size*sizeof(double));
     for(int i =0; i < list_size*30;i++){
-	new_lst[i] = 0.0; 
+	    new_lst[i] = 0.0; 
     }
 
     while(fgets(line, 1024, stream)){
@@ -150,17 +109,137 @@ double* initialize_unique_csv(int list_size,const char* filename,double *lst){
     return new_lst;
 }
 
-int initialize_named_params(const char* filename, ParameterSet p){
+int initialize_named_params(const char* filename,struct ParameterSet *p){
+
     FILE* stream = fopen(filename,"r");
     char line[300];
     char *token; 
     float value = 0;
     int reps = 0;
     int counter = 0;
-    while(feof(fp) != true){
-        fgets(line, 300, fp);
-        token = strtok(line, ",");
-        value = atof(strtok(line,","));
+    char* named_val;
+    while(fgets(line,1024,stream)){
+        named_val = strtok(line,",");
+        //sigma_q1
+        if(counter == 1){
+            value = atof(strtok(NULL, ","));
+            fprintf(stderr,"%f \n",value);
+            fflush(stderr);
+            p->sigma_q1 = value;
+        }
+        if(counter == 2){
+            value = atof(strtok(NULL, ","));
+            fprintf(stderr,"%f \n",value);
+            fflush(stderr);
+            p->sigma_q2 = value;
+        }
+        if(counter == 3){
+            value = atof(strtok(NULL, ","));
+            fprintf(stderr,"%f \n",value);
+            fflush(stderr);
+            p->sigma_i1 = value;
+        }
+        if(counter == 4){
+            value = atof(strtok(NULL, ","));
+            fprintf(stderr,"%f \n",value);
+            fflush(stderr);
+            p->sigma_i2 = value;
+
+        }
+        if(counter == 5){
+            value = atof(strtok(NULL, ","));
+            p->sigma_h1 = value;
+        }
+        if(counter == 6){
+            value = atof(strtok(NULL, ","));
+            p->sigma_h2 = value;
+        }
+        if(counter == 7){
+            value = atof(strtok(NULL, ","));
+            p->sigma_d1 = value;
+        }
+        if(counter == 8){
+            value = atof(strtok(NULL, ","));
+            p->sigma_d2 = value;
+        }
+        if(counter == 9){
+            value = atof(strtok(NULL, ","));
+            p->sigma_VC1 = value;
+        }
+        if(counter == 10){
+            value = atof(strtok(NULL, ","));
+            p->sigma_VC2 = value;
+        }
+        if(counter == 11){
+            value = atof(strtok(NULL, ","));
+            p->C1= value;
+        }
+        if(counter == 12){
+            value = atof(strtok(NULL, ","));
+            p->C2= value;
+        }
+        if(counter == 13){
+            value = atof(strtok(NULL, ","));
+            p->zeta = value;
+        }
+        if(counter == 14){
+            value = atof(strtok(NULL, ","));
+            p->gamma = value;
+        }
+        if(counter == 15){
+            value = atof(strtok(NULL, ","));
+            p->variant_start = value;
+        }
+        if(counter == 16){
+            value = atof(strtok(NULL, ","));
+            p->R01 = value;
+        }
+        if(counter == 17){
+            value = atof(strtok(NULL, ","));
+            p->R02 = value;
+        }
+        if(counter == 18){
+            value = atof(strtok(NULL, ","));
+            fprintf(stderr,"%f \n",value);
+            fflush(stderr);
+            p->b = value;
+        }
+        if(counter == 19){ 
+            value = atof(strtok(NULL, ","));
+            p->school_fall= value;
+        }
+        if(counter == 20){
+            value = atof(strtok(NULL, ","));
+            p->school_spring= value;
+        }
+        if(counter == 20){
+            value = atof(strtok(NULL, ","));
+            p->school_break = value;
+        }
+        if(counter == 21){
+            value = atof(strtok(NULL, ","));
+            p->vax_start= value;
+        }
+        if(counter == 22){
+            value = atof(strtok(NULL, ","));
+            p->first_vax_seas_dur = value;
+        }
+        if(counter == 23){
+            value = atof(strtok(NULL, ","));
+            p->perm_vax_seas_dur = value;
+        }
+        if(counter == 24){
+            value = atof(strtok(NULL, ","));
+            fprintf(stderr,"%f \n",value);
+            fflush(stderr);
+            p->time_of_waning_natural = value;
+        }
+        if(counter == 25){
+            value = atof(strtok(NULL, ","));
+            fprintf(stderr,"%f \n",value);
+            fflush(stderr);
+            p->time_of_immunity = value;
+        }
         counter += 1;
     }
     fclose(stream);

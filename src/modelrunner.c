@@ -82,7 +82,6 @@ int main(int argc, char* argv[]){
     pthread_t threads[NTHREADS];
     int thread_args[NTHREADS];
     int rc,i;
-    struct ParameterSet params; 
     //if(argc != 4){
     //    printf("Need number of runs!");
     //    return 0;
@@ -109,9 +108,12 @@ int main(int argc, char* argv[]){
     extern const double time_of_immunity;
     extern double variant_start_R02;
 
-    double* vv_values;
     const char *vv_title =  "../data/vv_vals.csv";
-    params.vv_values = initialize_unique_csv(11,vv_title,params.vv_values);
+    struct ParameterSet p;
+    struct ParameterSet *point = malloc(sizeof(p));
+    point = &p;
+    initialize_named_params("one_strain.csv",point);
+    p.vv_values = initialize_unique_csv(11,vv_title,p.vv_values);
     time_t seconds;
 
     int run_number = atoi(argv[1]);
@@ -123,20 +125,22 @@ int main(int argc, char* argv[]){
     //initialize gsl random environment
     char* dynamic_title = (char*) malloc(sizeof(char)*100);
     char* new_file = (char*)malloc(sizeof(char)*90);
-    fprintf(stderr,"PERCENT NUMBER: %d \n",percent_number);
+    fprintf(stderr,"BIRTH RATE: %d \n",p.b);
+    fflush(stderr);
+    fprintf(stderr,"SIGMA D1: %d \n",p.sigma_d1);
     fflush(stderr);
     //Vaccine configs, relates to all the different vaccine percentages
     int vax_percent = percent_number / 10;
-    fprintf(stderr,"Vaccine value: %lf, Percentage: %d \n",vv_values[vv_index],percent_number);
+    fprintf(stderr,"Vaccine value: %lf, Percentage: %d \n",p.vv_values[2],percent_number);
     fflush(stderr);
     //Running each vaccine percentage for number given by sim_number
     for(int j = 0; j < run_number+1; j++){
        new_file = generate_names(vax_percent,j);
-       stoch_model(vv_values[vv_index],j,new_file);
+       stoch_model(p.vv_values[vv_index],j,new_file);
 	   free(new_file);
      } 
 	new_file = (char*)malloc(sizeof(char)*90);
-    free(vv_values);
+    free(p.vv_values);
     free(dynamic_title);
     free(new_file);
     seconds = time(NULL);
