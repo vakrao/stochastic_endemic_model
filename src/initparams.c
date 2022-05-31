@@ -123,13 +123,13 @@ int initialize_named_params(const char* filename,struct ParameterSet *p){
         //sigma_q1
         if(counter == 1){
             value = atof(strtok(NULL, ","));
-            fprintf(stderr,"%f \n",value);
-            fflush(stderr);
             p->sigma_q1 = value;
+            fprintf(stderr,"SIGMA Q1: %f \n",(*p).sigma_q1);
+            fflush(stderr);
         }
         if(counter == 2){
             value = atof(strtok(NULL, ","));
-            fprintf(stderr,"%f \n",value);
+            fprintf(stderr,"SIGMA Q2: %f \n",value);
             fflush(stderr);
             p->sigma_q2 = value;
         }
@@ -144,7 +144,6 @@ int initialize_named_params(const char* filename,struct ParameterSet *p){
             fprintf(stderr,"%f \n",value);
             fflush(stderr);
             p->sigma_i2 = value;
-
         }
         if(counter == 5){
             value = atof(strtok(NULL, ","));
@@ -157,6 +156,8 @@ int initialize_named_params(const char* filename,struct ParameterSet *p){
         if(counter == 7){
             value = atof(strtok(NULL, ","));
             p->sigma_d1 = value;
+            fprintf(stderr,"SIGMA D1: %f \n",(*p).sigma_d1);
+            fflush(stderr);
         }
         if(counter == 8){
             value = atof(strtok(NULL, ","));
