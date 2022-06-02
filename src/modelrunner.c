@@ -24,27 +24,27 @@ int main(int argc, char* argv[]){
         printf("Missing parameters!");
         return 0;
     }
-    extern const int AGES;  
-    extern const double b;  
-    extern const double sigma; 
-    extern const double sigma_h; 
-    extern const double sigma_d; 
-    extern const double ve1;
-    extern const double variant_eff_2;
-    extern const double C1;
-    extern const double C2;
-    extern const int years; 
-    extern const double zeta;
-    extern const double ti_icu;
-    extern const int ft;
-    extern const double VC1; 
-    extern const double VC2;
-    extern const double variant_start;
-    extern const double R01; 
-    extern const double gamma_infec;
-    extern const double time_of_waning_natural;
-    extern const double time_of_immunity;
-    extern double variant_start_R02;
+    //extern const int AGES;  
+    //extern const double b;  
+    //extern const double sigma; 
+    //extern const double sigma_h; 
+    //extern const double sigma_d; 
+    //extern const double ve1;
+    //extern const double variant_eff_2;
+    //extern const double C1;
+    //extern const double C2;
+    //extern const int years; 
+    //extern const double zeta;
+    //extern const double ti_icu;
+    //extern const int ft;
+    //extern const double VC1; 
+    //extern const double VC2;
+    //extern const double variant_start;
+    //extern const double R01; 
+    //extern const double gamma_infec;
+    //extern const double time_of_waning_natural;
+    //extern const double time_of_immunity;
+    //extern double variant_start_R02;
 
     const char *vv_title =  "../data/vv_vals.csv";
     struct ParameterSet p;
@@ -78,17 +78,20 @@ int main(int argc, char* argv[]){
     for(int j = 0; j < run_number+1; j++){
        new_file = generate_names(vax_percent,j);
        if (model_type == 0){
+           fprintf(stderr,"HELLO!");
+           fflush(stderr);
            stoch_model(p.vv_values[vv_index],j,new_file,p);
        }
-       if (model_type == 1){
-           smallage_model(p.vv_values[vv_index],j,new_file,p);
-       }
+       //if (model_type == 1){
+       //    smallage_model(p.vv_values[vv_index],j,new_file,p);
+       //}
 	   free(new_file);
      } 
 	new_file = (char*)malloc(sizeof(char)*90);
     free(p.vv_values);
     free(dynamic_title);
     free(new_file);
+    free(p.mu);
     seconds = time(NULL);
     printf("MODEL DONE IN: %ld \n",seconds);
 }

@@ -18,47 +18,6 @@
 // run number is used o name he files
 // Need to add dynamic vax changing
 
-//struct params{
-//  const int AGES = 85;                                    
-//  const double birth_rate = .012/365.0;
-//  //reduction in infectiousness for multiple strains
-//  const double sigma_red_i1= 0.5;
-//  const double sigma_red_i2= 0.5;
-//  //vaccine protection against infection 
-//  const double sigma_i1 = 0.5;
-//  const double sigma_i2 = 0.4;
-//  //vaccine protection against hosptilaization 
-//  const double sigma_h1 = 0.9; 
-//  const double sigma_h2 = 0.9; 
-//  //vaccine protection against death 
-//  const double sigma_d1 = 0.95; 
-//  const double sigma_d2 = 0.95; 
-//  const double C1 = 0.5;
-//  const double C2 = 0.9;
-//  const int years = 20; 
-//  //hospitalization waning recovery rate
-//  const double zeta = 0.125;
-//  const double ti_icu = 8;
-//  const int ft = years*365;
-//  const double VC1 = 0.5; 
-//  const double VC2 = 0.9;
-//  //school and variant variables 
-//  const double variant_start = -10;
-//  const int school_spring = 150; 
-//  const int school_break = 95; 
-//  const int school_fall = 120;
-//  const int vaccine_start = school_spring + school_break;
-//  const int first_vax_seas_dur = 100;
-//  const int perm_vax_seas_dur = 60;
-//  const double R01 = 5; 
-//  const double gamma = 0.1587;
-//  // immunity values
-//  const double time_of_waning_natural = 200;
-//  const double time_of_immunity = 200;
-//  const double variant_start_R02 = 0;
-//  double age_based_coverage[AGES];
-//}
-
 
 
 double poisson_draw(gsl_rng *r,double mu, double max_value){
@@ -69,17 +28,11 @@ double poisson_draw(gsl_rng *r,double mu, double max_value){
     }
 
     double draw_value = max_value+1;
-    fprintf(stderr,"DRAW VALUE: %lf",draw_value);
-    fflush(stderr);
     if(mu >= max_value){
-        fprintf(stderr,"MU: %lf",mu);
-        fflush(stderr);
         return max_value;
     }
     while(draw_value > max_value ){
         draw_value = gsl_ran_poisson(r,mu);
-        fprintf(stderr,"DRAW VALUE: %lf",draw_value);
-        fflush(stderr);
     }
     return draw_value;
 }
@@ -132,8 +85,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p)
   //  const double time_of_immunity = 200;
   //  const double p.variant_start_R02 = 0;
     double age_based_coverage[p.AGES];
-   
-   
+    fprintf(stderr,"AGES: %d",p.AGES);
+    fflush(stderr);
     srand(time(NULL));
     gsl_rng *r;
     const gsl_rng_type *T;
@@ -258,8 +211,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p)
     int t = 0;
     float q2  = 0;
     const float q2_value = 0;
-   fprintf(stderr,"STATIC INIT! \n");
-   fflush(stderr);
 
     double Xr1[p.AGES];
     double Y1[p.AGES];
@@ -330,30 +281,22 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p)
     double muIFR = 0;
     double ifr_i2_scale = 1;
     int new_yearly_imports = 100;
-   fprintf(stderr,"STARTNG TO CHANGE! AGES: %d\n",p.AGES);
-   fflush(stderr);
 
     // Initilizaing large datasets
     mu_i1 = initialize_unique_csv(p.AGES,ifr_ile,mu_i1);
-   fprintf(stderr,"UNIQUE \n");
-   fflush(stderr);
     m = initialize_unique_csv(p.AGES,m_ile,m);
     N = initialize_unique_csv(p.AGES,n_ile,N);
-   fprintf(stderr,"UNIQUE \n");
-   fflush(stderr);
     initialize_repeated_csv(p.AGES,vax_ile,VC);
     initialize_repeated_csv(p.AGES,im_ile,im_prop);
     initialize_repeated_csv(p.AGES,icu_file,ICU_raio);
     read_contact_matrices(p.AGES, overall_ile,cm_overall);
     read_contact_matrices(p.AGES, school_file,cm_school);
     int couner = 0;
-   fprintf(stderr,"LISTS INITIALIZED! \n");
-   fflush(stderr);
     
     // Setting values for theta, mu, and m
     for(int i = 0; i < p.AGES; i++){
         theta[i] = 0;
-        mu_i1[i] = mu_i1[i] / 100.0;
+        mu_i1[i] = mu_i1[i] / 10.0;
         mu_i2[i] = mu_i1[i] * ifr_i2_scale;
         m[i] = m[i] / 365.0;
         m[i] = m[i] * 5.0;
@@ -446,15 +389,11 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p)
         IVR2[c] = 0;
     }
    t = 0;
-   fprintf(stderr,"STARTING TO ENTER LOOP!");
-   fflush(stderr);
     double total_lambda = 0;
     int rand_number = 0;
     //Time loop starts here
     while(t < p.ft){
 	// School contact matrix control flow
-   fprintf(stderr,"LOOPING! %d \n",t);
-   fflush(stderr);
 	    if(t % (p.school_spring) == 0 ){
 	        for(int i = 0; i < p.AGES; i++){
 	           for(int j = 0; j < p.AGES; j++){
@@ -547,23 +486,17 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p)
             	}
             }
         }
-        fprintf(stderr,"AGE LOOP! \n");
-        fflush(stderr);
 
         // Stochasic Age-Transition Loop
         for(int i=0; i < p.AGES; i++){
 	      // Determining attack rate!
-            double lambda1 = find_lambda(q1,i,p.sigma_i1,I1,VI1,M,N,S);
+            double lambda1 = find_lambda(q1,i,p.sigma_q1,I1,VI1,M,N,S);
             total_lambda += lambda1;
-            double lambda2 = find_lambda(q2,i,p.sigma_i2,I2,VI2,M,N,S);
-        fprintf(stderr,"LAMBDA ONE \n");
-        fflush(stderr);
+            double lambda2 = find_lambda(q2,i,p.sigma_q2,I2,VI2,M,N,S);
             double lambda_mean = (S[i] * lambda1);
-        fprintf(stderr,"MEAN done \n");
-        fflush(stderr);
             Xsi1[i] =  poisson_draw(r,lambda_mean,S[i]);
-        fprintf(stderr,"XSI1 done \n");
-        fflush(stderr);
+                fprintf(stderr,"XSI1 at age %d, Xsi1: %lf, time: %d \n",i,Xsi1[i],t);
+                fflush(stderr);
             if(S[i] - Xsi1[i] >= 1){
                 temp_transition = (S[i] - Xsi1[i]);
                 Xsi2[i] = poisson_draw(r,temp_transition*lambda2,temp_transition);
@@ -571,8 +504,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p)
             else{
                 Xsi2[i] = 0;
             }
-        fprintf(stderr,"LAMBDA EXIT \n");
-        fflush(stderr);
 
             // S -> V compartment exit logic
             if(S[i] - Xsi1[i] - Xsi2[i] >= 1){
@@ -655,8 +586,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p)
             else{
                 Y2[i] = 0;
             }
-        fprintf(stderr,"I2 EXIT! \n");
-        fflush(stderr);
 
             // I2 exit logic, hospitalization
             if(I2[i] - Y2[i] >= 1){
@@ -790,7 +719,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p)
                 R2D[i] = 0;
             }
 
-           Xvr1vi2[i] = poisson_draw(r,VR1[i]*(1-p.VC1)*lambda2*p.sigma_q1,VR1[i]); 
+           Xvr1vi2[i] = poisson_draw(r,VR1[i]*(1-p.VC1)*lambda2*p.sigma_i1,VR1[i]); 
      	   //Vaccine Recovered One Comaprtment Logic
            if(VR1[i] - Xvr1vi2[i] >= 1){
                temp_transition = VR1[i] - Xvr1vi2[i];
@@ -872,13 +801,15 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p)
             if(i == 0){
                 float totalN = total(N);
                 SB[i] = poisson_draw(r,totalN*p.b,totalN);
+                fprintf(stderr,"BIRTH RATE: %lf, TOTAL N: %lf, BIRTHS: %lf",p.b,totalN,SB[i]);
+                fflush(stderr);
             }
         }
 
        if(t == 0){
            fprintf(fptr,"t,vv,age,value,sim_number,vartype\n");
         }
-        fprintf(stderr,"finding all ages \n");
+        fprintf(stderr,"TOTAL VALUES: %lf\n",total(N));
         fflush(stderr);
 
 
