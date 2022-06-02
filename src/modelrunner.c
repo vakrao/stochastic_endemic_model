@@ -20,10 +20,10 @@ int main(int argc, char* argv[]){
     pthread_t threads[NTHREADS];
     int thread_args[NTHREADS];
     int rc,i;
-    //if(argc != 4){
-    //    printf("Need number of runs!");
-    //    return 0;
-    //}
+    if(argc != 4){
+        printf("Missing parameters!");
+        return 0;
+    }
     extern const int AGES;  
     extern const double b;  
     extern const double sigma; 
@@ -48,15 +48,13 @@ int main(int argc, char* argv[]){
 
     const char *vv_title =  "../data/vv_vals.csv";
     struct ParameterSet p;
-    struct ParameterSet *point = malloc(sizeof(p));
-    point = &p;
     initialize_named_params("one_strain.csv",&p);
     p.vv_values = initialize_unique_csv(11,vv_title,p.vv_values);
     time_t seconds;
 
     int run_number = atoi(argv[1]);
     int percent_number = atoi(argv[2]);
-    char* model_type = argv[3];
+    int model_type = atoi(argv[3]);
     int vv_index = percent_number/10;
     // initializes psi, the vaccine coverage variable 
     // based on vaccinating more individuasl in the first 
@@ -72,13 +70,19 @@ int main(int argc, char* argv[]){
     int vax_percent = percent_number / 10;
     fprintf(stderr,"Vaccine value: %lf, Percentage: %f \n",p.vv_values[2],percent_number);
     fflush(stderr);
+    p.ft = p.years * 365;
+    fprintf(stderr,"FT: %d, YEARS: %d \n",p.ft,p.years);
+    fflush(stderr);
+    
     //Running each vaccine percentage for number given by sim_number
     for(int j = 0; j < run_number+1; j++){
        new_file = generate_names(vax_percent,j);
-       if (model_type == "big_age")
-           stoch_model(p.vv_values[vv_index],j,new_file);
-       if (model_type == "small_age")
-           smallage_model(p.vv_values[vv_index],j,new_file);
+       if (model_type == 0){
+           stoch_model(p.vv_values[vv_index],j,new_file,p);
+       }
+       if (model_type == 1){
+           smallage_model(p.vv_values[vv_index],j,new_file,p);
+       }
 	   free(new_file);
      } 
 	new_file = (char*)malloc(sizeof(char)*90);

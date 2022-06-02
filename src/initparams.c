@@ -181,65 +181,77 @@ int initialize_named_params(const char* filename,struct ParameterSet *p){
         }
         if(counter == 13){
             value = atof(strtok(NULL, ","));
-            p->zeta = value;
+            p->years = value;
+            fprintf(stderr,"YEARS: %d \n",(*p).years);
+            fflush(stderr);
         }
         if(counter == 14){
             value = atof(strtok(NULL, ","));
-            p->gamma = value;
+            p->zeta = value;
         }
         if(counter == 15){
             value = atof(strtok(NULL, ","));
-            p->variant_start = value;
+            p->gamma = value;
         }
         if(counter == 16){
             value = atof(strtok(NULL, ","));
-            p->R01 = value;
+            p->variant_start = value;
         }
         if(counter == 17){
             value = atof(strtok(NULL, ","));
-            p->R02 = value;
+            p->R01 = value;
         }
         if(counter == 18){
+            value = atof(strtok(NULL, ","));
+            p->R02 = value;
+        }
+        if(counter == 19){
             value = atof(strtok(NULL, ","));
             fprintf(stderr,"%f \n",value);
             fflush(stderr);
             p->b = value;
         }
-        if(counter == 19){ 
+        if(counter == 20){ 
             value = atof(strtok(NULL, ","));
             p->school_fall= value;
         }
-        if(counter == 20){
+        if(counter == 21){
             value = atof(strtok(NULL, ","));
             p->school_spring= value;
         }
-        if(counter == 20){
+        if(counter == 22){
             value = atof(strtok(NULL, ","));
             p->school_break = value;
         }
-        if(counter == 21){
+        if(counter == 23){
             value = atof(strtok(NULL, ","));
             p->vax_start= value;
         }
-        if(counter == 22){
+        if(counter == 24){
             value = atof(strtok(NULL, ","));
             p->first_vax_seas_dur = value;
         }
-        if(counter == 23){
+        if(counter == 25){
             value = atof(strtok(NULL, ","));
             p->perm_vax_seas_dur = value;
         }
-        if(counter == 24){
+        if(counter == 26){
             value = atof(strtok(NULL, ","));
             fprintf(stderr,"%f \n",value);
             fflush(stderr);
             p->time_of_waning_natural = value;
         }
-        if(counter == 25){
+        if(counter == 27){
             value = atof(strtok(NULL, ","));
             fprintf(stderr,"%f \n",value);
             fflush(stderr);
             p->time_of_immunity = value;
+        }
+        if(counter == 28){
+            value = atof(strtok(NULL, ","));
+            fprintf(stderr,"%f \n",value);
+            fflush(stderr);
+            p->AGES = value;
         }
         counter += 1;
     }
