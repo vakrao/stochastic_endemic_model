@@ -77,14 +77,7 @@ int main(int argc, char* argv[]){
     //Running each vaccine percentage for number given by sim_number
     for(int j = 0; j < run_number+1; j++){
        new_file = generate_names(vax_percent,j);
-       if (model_type == 0){
-           fprintf(stderr,"HELLO!");
-           fflush(stderr);
-           stoch_model(p.vv_values[vv_index],j,new_file,p);
-       }
-       //if (model_type == 1){
-       //    smallage_model(p.vv_values[vv_index],j,new_file,p);
-       //}
+       stoch_model(p.vv_values[vv_index],j,new_file,p,model_type);
 	   free(new_file);
      } 
 	new_file = (char*)malloc(sizeof(char)*90);

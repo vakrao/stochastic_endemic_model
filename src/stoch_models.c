@@ -41,7 +41,7 @@ double poisson_draw(gsl_rng *r,double mu, double max_value){
 
 
 
-void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p){
+void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,int setting){
     FILE *fptr = fopen(fileName,"w");
     //fprintf(stderr,"STARTING MODEL! \n ");
     //fflush(stderr);
@@ -166,14 +166,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p)
     int psi_counter = 0;
     int perm_unvax_period = p.school_spring + p.school_break;
     int perm_vax_period = perm_unvax_period + p.perm_vax_seas_dur;
-   fprintf(stderr,"STARTING VAX INITIALIZION! UNVAX %d, VAX %d\n",perm_unvax_period,perm_vax_period);
-   fflush(stderr);
-    fprintf(stderr,"vaccine start: %d \n",p.vax_start);
-    fflush(stderr);
-    fprintf(stderr,"first vax seas dur: %d \n",p.first_vax_seas_dur);
-    fflush(stderr);
-    fprintf(stderr,"YEARS: %f\n",p.years);
-    fflush(stderr);
     // vaccine seasonaity loop
     for(int i = 0; i < p.years; i++){
         for(int j = 0; j < 365; j++){
@@ -809,8 +801,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p)
        if(t == 0){
            fprintf(fptr,"t,vv,age,value,sim_number,vartype\n");
         }
-        fprintf(stderr,"TOTAL VALUES: %lf\n",total(N));
-        fflush(stderr);
 
 
         for(int i = 0; i < p.AGES; i++){
@@ -833,12 +823,10 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p)
             XI1[i] = Xsi1[i] + Xr2i1[i]; 
             XI2[i] = Xsi2[i] + Xr1i2[i];
             XD[i] = Di1[i] + Di2[i] + DVi1[i] + DVi2[i]; 
-//	    XDI[i] = Di1[i] + Di2[i]; 
- //           XDVI[i] = DVi1[i] + DVi2[i];
 
 
 //          Age-based data-saving
-        
+        if(setting == 0){
           fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,i,N[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,S\n",t,vv,i,S[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,I1\n",t,vv,i,I1[i],run_number);
@@ -855,6 +843,12 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p)
           fprintf(fptr,"%d,%.2f,%d,%f,%d,VR2\n",t,vv,i,VR2[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,H1\n",t,vv,i,H1[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,H2\n",t,vv,i,H2[i],run_number);
+        }
+        if(setting == 1){
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,i,N[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi1\n",t,vv,i,Xsi1[i],run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,XD\n",t,vv,i,XD[i],run_number);
+        }
 
       }
 
