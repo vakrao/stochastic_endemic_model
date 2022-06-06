@@ -43,8 +43,6 @@ double poisson_draw(gsl_rng *r,double mu, double max_value){
 
 void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,int setting){
     FILE *fptr = fopen(fileName,"w");
-    //fprintf(stderr,"STARTING MODEL! \n ");
-    //fflush(stderr);
 
   //  const int AGES = 85; 
   //  const double birth_rate = .012/365.0;
@@ -380,7 +378,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         IVR1[c] = 0;
         IVR2[c] = 0;
     }
-   t = 0;
+    t = 0;
     double total_lambda = 0;
     int rand_number = 0;
     //Time loop starts here
@@ -844,6 +842,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
           fprintf(fptr,"%d,%.2f,%d,%f,%d,H1\n",t,vv,i,H1[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,H2\n",t,vv,i,H2[i],run_number);
         }
+        // Storing less data for ages
         if(setting == 1){
           fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,i,N[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi1\n",t,vv,i,Xsi1[i],run_number);
@@ -852,27 +851,27 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
       }
 
-//          Total Age Agnostic data-saving
-//        fprintf(fptr,"%d,%.2f,%f,N\n",t,vv,total(N));
-//        fprintf(fptr,"%d,%.2f,%f,S\n",t,vv,total(S));
-//        fprintf(fptr,"%d,%.2f,%f,I1\n",t,vv,total(I1));
-//        fprintf(fptr,"%d,%.2f,%f,I2\n",t,vv,total(I2));
-//        fprintf(fptr,"%d,%.2f,%f,R1\n",t,vv,total(R1));
-//        fprintf(fptr,"%d,%.2f,%f,R2\n",t,vv,total(R2));
-//        fprintf(fptr,"%d,%.2f,%f,V\n",t,vv,total(V));
-//        fprintf(fptr,"%d,%.2f,%f,XIVI1\n",t,vv,total(XIV1));
-//        fprintf(fptr,"%d,%.2f,%f,XIV2\n",t,vv,total(XIV2));
-//        fprintf(fptr,"%d,%.2f,%f,Xsi1\n",t,vv,total(Xsi1));
-//        fprintf(fptr,"%d,%.2f,%f,Xsi2\n",t,vv,total(Xsi2));
-//        fprintf(fptr,"%d,%.2f,%f,XD\n",t,vv,total(XD));
-//        fprintf(fptr,"%d,%.2f,%f,VR1\n",t,vv,total(VR1));
-//        fprintf(fptr,"%d,%.2f,%f,VR2\n",t,vv,total(VR2));
-//        fprintf(fptr,"%d,%.2f,%f,H1\n",t,vv,total(H1));
-//        fprintf(fptr,"%d,%.2f,%f,H2\n",t,vv,total(H2));
-//        
+        if(setting == 2){
+//              Total Age Agnostic data-saving
+            fprintf(fptr,"%d,%.2f,%f,N\n",t,vv,total(N));
+            fprintf(fptr,"%d,%.2f,%f,S\n",t,vv,total(S));
+            fprintf(fptr,"%d,%.2f,%f,I1\n",t,vv,total(I1));
+            fprintf(fptr,"%d,%.2f,%f,I2\n",t,vv,total(I2));
+            fprintf(fptr,"%d,%.2f,%f,R1\n",t,vv,total(R1));
+            fprintf(fptr,"%d,%.2f,%f,R2\n",t,vv,total(R2));
+            fprintf(fptr,"%d,%.2f,%f,V\n",t,vv,total(V));
+            fprintf(fptr,"%d,%.2f,%f,XIVI1\n",t,vv,total(XIV1));
+            fprintf(fptr,"%d,%.2f,%f,XIV2\n",t,vv,total(XIV2));
+            fprintf(fptr,"%d,%.2f,%f,Xsi1\n",t,vv,total(Xsi1));
+            fprintf(fptr,"%d,%.2f,%f,Xsi2\n",t,vv,total(Xsi2));
+            fprintf(fptr,"%d,%.2f,%f,XD\n",t,vv,total(XD));
+            fprintf(fptr,"%d,%.2f,%f,VR1\n",t,vv,total(VR1));
+            fprintf(fptr,"%d,%.2f,%f,VR2\n",t,vv,total(VR2));
+            fprintf(fptr,"%d,%.2f,%f,H1\n",t,vv,total(H1));
+            fprintf(fptr,"%d,%.2f,%f,H2\n",t,vv,total(H2));
+        }
+        
         total_lambda = 0;
-
-        //Dynamically assingn vv
         // vv = dynamic_vv()
         //zero out all transitions
         for(int c = 0; c < p.AGES; c++){
