@@ -22,13 +22,13 @@ int rt_calc(float* S,float* I,float* R,float* V,struct ParameterSet p){
     // Setting values for flow OUT of infected subsystem.
     for(int i = 0; i < p.AGES; i++){
        if(change == true){
-           float value = (p.gamma + m[adjusted_index] + mu[adjusted_index]*p.gamma)
+           float value = (p.gamma + m[adjusted_index] + mu[adjusted_index]*p.gamma);
            gsl_matrix_set(FL,i,adjusted_index,value);
            adjusted_index += 1;
            change = false;
        } 
        else{
-           float value = (p.gamma + m[adjusted_index] + mu[adjusted_index]*p.gamma*p.sigma_1d)
+           float value = (p.gamma + m[adjusted_index] + mu[adjusted_index]*p.gamma*p.sigma_1d);
            gsl_matrix_set(FL,i,adjusted_index,value);
            adjusted_index += 1;
            change = true;
@@ -42,17 +42,17 @@ int rt_calc(float* S,float* I,float* R,float* V,struct ParameterSet p){
             float C = V[row_counter]*(1-p.sigma_i1)*(M[row_counter][column_counter]/N[column_counter]); 
             float D = V[row_counter]*(1-p.sigma_i1)*p.sigma_q1*(M[row_counter][column_counter]/N[column_counter]); 
              if((i % 2 == 1) && (j % 2 == 1)){
-                 G[i][j] = A;
+                 gsl_matrix_set(G,i,j,A);
              } 
              if((i % 2 == 1) && (j % 2 == 0)){
-                 G[i][j] = B;
+                 gsl_matrix_set(G,i,j,B);
                  column_counter += 1;
              } 
              if((i % 2 == 0) && (j % 2 == 1)){
-                 G[i][j] = C;
+                 gsl_matrix_set(G,i,j,C);
              } 
              if((i % 2 == 0) && (j % 2 == 0)){
-                 G[i][j] = D;
+                 gsl_matrix_set(G,i,j,D);
                  column_counter += 1;
              } 
         }
