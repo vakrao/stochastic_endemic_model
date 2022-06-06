@@ -12,9 +12,9 @@
 #SBATCH --ntasks-per-node=1 #number of tasks per node
 #SBATCH --time=10:00:00 #requested time
 
-export PARAMS = "one_strain.csv"
-export RUNS = 50
-export FOLDER = "50_run"
+export PARAMS="one_strain.csv"
+export RUNS=50
+export FOLDER="50_run"
 
 #load modules
 module load gsl
@@ -49,7 +49,7 @@ cd ../scripts/
 module load python
 echo '###### Creating large files! ######'
 python3 seq_csv.py
-mv total_vax_*.csv /N/slate/project/endemic_covid/data/raw/$FOLDER
+mv total_vax_*.csv /N/project/endemic_covid/data/raw/$FOLDER
 
 #echo '###### Finished paste!######'
 #echo '###### Starting mean!######'
