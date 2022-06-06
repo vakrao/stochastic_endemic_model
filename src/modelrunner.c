@@ -13,21 +13,23 @@
 //runs the model, takes as input from the command line # of simulations to complete 
 // ASSUMPTIONS: assumes that we want data for every possible vv 
 // ASSUMPTIONS: look at variable initilizations in simconstants.h 
-// Reccomended number of runs is 1000 
+// Reccomended number of runs is 100 
 extern gsl_rng *r;
 //main function run
 int main(int argc, char* argv[]){
     pthread_t threads[NTHREADS];
     int thread_args[NTHREADS];
     int rc,i;
-    if(argc != 4){
+    if(argc != 5){
         printf("Missing parameters!");
         return 0;
     }
 
     const char *vv_title =  "../data/vv_vals.csv";
     struct ParameterSet p;
-    initialize_named_params("one_strain.csv",&p);
+    char* file_name = (char*)malloc(sizeof(char)*2000);
+    file_name = argv[4];
+    initialize_named_params(file_name,&p);
     p.vv_values = initialize_unique_csv(11,vv_title,p.vv_values);
     time_t seconds;
 
@@ -41,17 +43,9 @@ int main(int argc, char* argv[]){
     //initialize gsl random environment
     char* dynamic_title = (char*) malloc(sizeof(char)*100);
     char* new_file = (char*)malloc(sizeof(char)*90);
-    fprintf(stderr,"MODEL SIGMAQ1: %f \n",p.sigma_q1);
-    fflush(stderr);
-    fprintf(stderr,"MODEL SIGMAD1: %f \n",p.sigma_d1);
-    fflush(stderr);
     //Vaccine configs, relates to all the different vaccine percentages
     int vax_percent = percent_number / 10;
-    fprintf(stderr,"Vaccine value: %lf, Percentage: %f \n",p.vv_values[2],percent_number);
-    fflush(stderr);
     p.ft = p.years * 365;
-    fprintf(stderr,"FT: %d, YEARS: %d \n",p.ft,p.years);
-    fflush(stderr);
     
     //Running each vaccine percentage for number given by sim_number
     for(int j = 0; j < run_number+1; j++){
@@ -69,6 +63,5 @@ int main(int argc, char* argv[]){
     free(dynamic_title);
     free(new_file);
     free(p.mu);
-    seconds = time(NULL);
-    printf("MODEL DONE IN: %ld \n",seconds);
+    free(file_name);
 }
