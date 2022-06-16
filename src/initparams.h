@@ -44,6 +44,8 @@ struct ParameterSet{
      //  vv values + death rate
     double* vv_values;
     double* mu;
+    double* m;
+    double** M;
     double b; 
 };
 extern struct ParameterSet p;

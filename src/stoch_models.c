@@ -5,6 +5,7 @@
 #include <time.h>
 #include <omp.h>
 #include "helpers.h"
+#include "rt_funcs.h"
 #include "initparams.h"
 #include<gsl/gsl_randist.h>  
 #include<gsl/gsl_rng.h>  
@@ -83,8 +84,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
   //  const double time_of_immunity = 200;
   //  const double p.variant_start_R02 = 0;
     double age_based_coverage[p.AGES];
-    fprintf(stderr,"AGES: %d",p.AGES);
-    fflush(stderr);
     srand(time(NULL));
     gsl_rng *r;
     const gsl_rng_type *T;
@@ -93,33 +92,36 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     T = gsl_rng_default;
     r = gsl_rng_alloc(gsl_rng_default);
     gsl_rng_set(r,value);
+
+    fprintf(stderr,"STARTING STUFF!");
+    fflush(stderr);
+
+
     
     for(int i = 0; i < p.AGES; i++){
-	    age_based_coverage[i] = 0; 
+	    p.age_based_coverage[i] = 0; 
     }
     //assigning vaccine percentages based on age
     for(int i = 0; i < p.AGES; i++){
         if ( i <= 5 & i > 0 ){
-            age_based_coverage[i] = 0;
+            p.age_based_coverage[i] = 0;
         }
         if ( i <= 12 & i > 5 ){
-            age_based_coverage[i] = (.646*vv)/365.0;
+            p.age_based_coverage[i] = (.646*vv)/365.0;
         }
         if ( i <= 17 & i > 12 ){
-            age_based_coverage[i] = (.553*vv)/365.0;
+            p.age_based_coverage[i] = (.553*vv)/365.0;
         }
         if ( i <= 49 & i > 17 ){
-            age_based_coverage[i] = (.384*vv)/365.0;
+            p.age_based_coverage[i] = (.384*vv)/365.0;
         }
         if ( i <= 64 & i > 49 ){
-            age_based_coverage[i] = (.506*vv)/365.0;
+            p.age_based_coverage[i] = (.506*vv)/365.0;
         }
         if ( i <= 85  & i > 64 ){
-            age_based_coverage[i] = (.698*vv)/365.0;
+            p.age_based_coverage[i] = (.698*vv)/365.0;
         }
     }
-   fprintf(stderr,"INITIALIZING ALL VALUES!");
-   fflush(stderr);
     double* m = (double*) malloc(p.AGES * sizeof(double));
     double** cm_school = (double**) malloc(p.AGES * sizeof(double*));
     double** cm_overall = (double**) malloc(p.AGES * sizeof(double*));
@@ -152,6 +154,10 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     double* XI2 = (double*) malloc(p.AGES * sizeof(double));
     double* XD = (double*) malloc(p.AGES * sizeof(double));
     double* N =(double*) malloc(p.AGES * sizeof(double));
+
+    fprintf(stderr,"BEFORE READING STUFFF");
+    fflush(stderr);
+
 
     const char *ifr_ile =  "../data/ifr.csv";
     const char *vax_ile =  "../data/dailyvax.csv";
@@ -273,16 +279,25 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     int new_yearly_imports = 100;
 
     // Initilizaing large datasets
+    //const char *ifr_ile =  "../data/ifr.csv";
+    //const char *vax_ile =  "../data/dailyvax.csv";
+    //const char *m_ile =  "../data/new_mort.csv";
+    //const char *n_ile = "../data/us_pop.csv";
+    //const char *im_ile = "../data/immigration_prop.csv";
+    //const char *overall_ile = "../data/overall_contacts.csv";
+    //const char *icu_file = "../data/icu_ratio.csv";
+    //const char *school_file = "../data/school_contacts.csv";    
     mu_i1 = initialize_unique_csv(p.AGES,ifr_ile,mu_i1);
-    m = initialize_unique_csv(p.AGES,m_ile,m);
+    m = initialize_unique_csv(p.AGES,m_ile,p.m);
     N = initialize_unique_csv(p.AGES,n_ile,N);
     initialize_repeated_csv(p.AGES,vax_ile,VC);
     initialize_repeated_csv(p.AGES,im_ile,im_prop);
     initialize_repeated_csv(p.AGES,icu_file,ICU_raio);
     read_contact_matrices(p.AGES, overall_ile,cm_overall);
     read_contact_matrices(p.AGES, school_file,cm_school);
-    int couner = 0;
-    
+    int counter = 0;
+    fprintf(stderr,"READING STUFFF");
+    fflush(stderr);
     // Setting values for theta, mu, and m
     for(int i = 0; i < p.AGES; i++){
         theta[i] = 0;
@@ -381,6 +396,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     t = 0;
     double total_lambda = 0;
     int rand_number = 0;
+    fprintf(stderr,"GETTING INTO TIME LOOP! \n");
+    fflush(stderr);
     //Time loop starts here
     while(t < p.ft){
 	// School contact matrix control flow
@@ -485,8 +502,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             double lambda2 = find_lambda(q2,i,p.sigma_q2,I2,VI2,M,N,S);
             double lambda_mean = (S[i] * lambda1);
             Xsi1[i] =  poisson_draw(r,lambda_mean,S[i]);
-                fprintf(stderr,"XSI1 at age %d, Xsi1: %lf, time: %d \n",i,Xsi1[i],t);
-                fflush(stderr);
             if(S[i] - Xsi1[i] >= 1){
                 temp_transition = (S[i] - Xsi1[i]);
                 Xsi2[i] = poisson_draw(r,temp_transition*lambda2,temp_transition);
@@ -791,8 +806,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             if(i == 0){
                 float totalN = total(N);
                 SB[i] = poisson_draw(r,totalN*p.b,totalN);
-                fprintf(stderr,"BIRTH RATE: %lf, TOTAL N: %lf, BIRTHS: %lf",p.b,totalN,SB[i]);
-                fflush(stderr);
             }
         }
 
@@ -873,6 +886,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         
         total_lambda = 0;
         // vv = dynamic_vv()
+    fprintf(stderr,"RESETTING VALUES! \n");
+    fflush(stderr);
         //zero out all transitions
         for(int c = 0; c < p.AGES; c++){
 	        XD[c] = 0; 
@@ -945,6 +960,12 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             IVR2[c] = 0;
         }
         t += 1;
+        // calcualte rt-value
+    fprintf(stderr,"BEFORE RT VALUES! \n");
+    fflush(stderr);
+        float rt =rt_calc(S,I1,R1,V,N,M,q1,p); 
+        fprintf(stderr,"RT VALUE! \n");
+        fflush(stderr);
     }
     // now, we free all associated memory
     free(m);

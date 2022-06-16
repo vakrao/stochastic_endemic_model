@@ -124,25 +124,17 @@ int initialize_named_params(const char* filename,struct ParameterSet *p){
         if(counter == 1){
             value = atof(strtok(NULL, ","));
             p->sigma_q1 = value;
-            fprintf(stderr,"SIGMA Q1: %f \n",(*p).sigma_q1);
-            fflush(stderr);
         }
         if(counter == 2){
             value = atof(strtok(NULL, ","));
-            fprintf(stderr,"SIGMA Q2: %f \n",value);
-            fflush(stderr);
             p->sigma_q2 = value;
         }
         if(counter == 3){
             value = atof(strtok(NULL, ","));
-            fprintf(stderr,"%f \n",value);
-            fflush(stderr);
             p->sigma_i1 = value;
         }
         if(counter == 4){
             value = atof(strtok(NULL, ","));
-            fprintf(stderr,"%f \n",value);
-            fflush(stderr);
             p->sigma_i2 = value;
         }
         if(counter == 5){
@@ -156,8 +148,6 @@ int initialize_named_params(const char* filename,struct ParameterSet *p){
         if(counter == 7){
             value = atof(strtok(NULL, ","));
             p->sigma_d1 = value;
-            fprintf(stderr,"SIGMA D1: %f \n",(*p).sigma_d1);
-            fflush(stderr);
         }
         if(counter == 8){
             value = atof(strtok(NULL, ","));
@@ -182,8 +172,6 @@ int initialize_named_params(const char* filename,struct ParameterSet *p){
         if(counter == 13){
             value = atof(strtok(NULL, ","));
             p->years = value;
-            fprintf(stderr,"YEARS: %d \n",(*p).years);
-            fflush(stderr);
         }
         if(counter == 14){
             value = atof(strtok(NULL, ","));
@@ -207,8 +195,6 @@ int initialize_named_params(const char* filename,struct ParameterSet *p){
         }
         if(counter == 19){
             value = atof(strtok(NULL, ","));
-            fprintf(stderr,"%f \n",value);
-            fflush(stderr);
             p->b = value;
         }
         if(counter == 20){ 
@@ -237,20 +223,14 @@ int initialize_named_params(const char* filename,struct ParameterSet *p){
         }
         if(counter == 26){
             value = atof(strtok(NULL, ","));
-            fprintf(stderr,"%f \n",value);
-            fflush(stderr);
             p->time_of_waning_natural = value;
         }
         if(counter == 27){
             value = atof(strtok(NULL, ","));
-            fprintf(stderr,"%f \n",value);
-            fflush(stderr);
             p->time_of_immunity = value;
         }
         if(counter == 28){
             value = atof(strtok(NULL, ","));
-            fprintf(stderr,"%f \n",value);
-            fflush(stderr);
             p->AGES = value;
         }
         counter += 1;

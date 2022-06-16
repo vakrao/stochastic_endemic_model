@@ -19,7 +19,7 @@ export FOLDER="50_run"
 #load modules
 module load gsl
 module swap gcc/6.3.0 gcc/10.2.0
-modue load python
+module load python
 
 #path to your working directory
 #cd full/path/to/your/directory
