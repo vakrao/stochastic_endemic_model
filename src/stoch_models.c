@@ -886,8 +886,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         
         total_lambda = 0;
         // vv = dynamic_vv()
-    fprintf(stderr,"RESETTING VALUES! \n");
-    fflush(stderr);
         //zero out all transitions
         for(int c = 0; c < p.AGES; c++){
 	        XD[c] = 0; 
@@ -961,11 +959,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         }
         t += 1;
         // calcualte rt-value
-    fprintf(stderr,"BEFORE RT VALUES! \n");
-    fflush(stderr);
-        float rt =rt_calc(S,I1,R1,V,N,M,q1,p); 
-        fprintf(stderr,"RT VALUE! \n");
-        fflush(stderr);
+    float rt = rt_calc(S,I1,R1,V,N,M,mu_i1,m,q1,p);
+    fprintf(fptr,"%d,%.2f,%d,%f,%d,RT\n",t,vv,-1,rt,run_number);
     }
     // now, we free all associated memory
     free(m);
