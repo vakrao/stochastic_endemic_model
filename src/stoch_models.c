@@ -44,45 +44,6 @@ double poisson_draw(gsl_rng *r,double mu, double max_value){
 
 void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,int setting){
     FILE *fptr = fopen(fileName,"w");
-
-  //  const int AGES = 85; 
-  //  const double birth_rate = .012/365.0;
-  //  //reduction in infectiousness for multiple strains
-  //  const double sigma_red_i1= 0.5;
-  //  const double sigma_red_i2= 0.5;
-  //  //vaccine protection against infection 
-  //  const double sigma_i1 = 0.5;
-  //  const double sigma_i2 = 0.4;
-  //  //vaccine protection against hosptilaization 
-  //  const double sigma_h1 = 0.9; 
-  //  const double sigma_h2 = 0.9; 
-  //  //vaccine protection against death 
-  //  const double sigma_d1 = 0.95; 
-  //  const double sigma_d2 = 0.95; 
-  //  const double C1 = 0.5;
-  //  const double C2 = 0.9;
-  //  const int years = 20; 
-  //  //hospitalization waning recovery rate
-  //  const double zeta = 0.125;
-  //  const double ti_icu = 8;
-  //  const int ft = years*365;
-////    const int ft = 10*365;
-  //  const double VC1 = 0.5; 
-  //  const double VC2 = 0.9;
-  //  //school and variant variables 
-  //  const double p.variant_start = -10;
-  //  const int school_spring = 150; 
-  //  const int school_break = 95; 
-  //  const int school_fall = 120;
-  //  const int vaccine_start = school_spring + school_break;
-  //  const int first_vax_seas_dur = 100;
-  //  const int perm_vax_seas_dur = 60;
-  //  const double R01 = 5; 
-  //  const double gamma = 0.1587;
-  //  // immunity values
-  //  const double time_of_waning_natural = 200;
-  //  const double time_of_immunity = 200;
-  //  const double p.variant_start_R02 = 0;
     double age_based_coverage[p.AGES];
     srand(time(NULL));
     gsl_rng *r;
@@ -93,8 +54,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     r = gsl_rng_alloc(gsl_rng_default);
     gsl_rng_set(r,value);
 
-    fprintf(stderr,"STARTING STUFF!");
-    fflush(stderr);
 
 
     
@@ -155,16 +114,14 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     double* XD = (double*) malloc(p.AGES * sizeof(double));
     double* N =(double*) malloc(p.AGES * sizeof(double));
 
-    fprintf(stderr,"BEFORE READING STUFFF");
-    fflush(stderr);
 
 
-    const char *ifr_ile =  "../data/ifr.csv";
-    const char *vax_ile =  "../data/dailyvax.csv";
-    const char *m_ile =  "../data/new_mort.csv";
-    const char *n_ile = "../data/us_pop.csv";
-    const char *im_ile = "../data/immigration_prop.csv";
-    const char *overall_ile = "../data/overall_contacts.csv";
+    const char *ifr_file =  "../data/ifr.csv";
+    const char *vax_file =  "../data/dailyvax.csv";
+    const char *m_file =  "../data/new_mort.csv";
+    const char *n_file = "../data/us_pop.csv";
+    const char *im_file = "../data/immigration_prop.csv";
+    const char *overall_file = "../data/overall_contacts.csv";
     const char *icu_file = "../data/icu_ratio.csv";
     const char *school_file = "../data/school_contacts.csv";
     int psi_counter = 0;
@@ -202,7 +159,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     // Be specific abou names 
     // Be super-general abou names...? Use 3-d array 
 
-    const float q1 = .0531397;
+    float q1 = p.q1;
     float R02 = 0;
     int t = 0;
     float q2  = 0;
@@ -287,13 +244,13 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     //const char *overall_ile = "../data/overall_contacts.csv";
     //const char *icu_file = "../data/icu_ratio.csv";
     //const char *school_file = "../data/school_contacts.csv";    
-    mu_i1 = initialize_unique_csv(p.AGES,ifr_ile,mu_i1);
-    m = initialize_unique_csv(p.AGES,m_ile,p.m);
-    N = initialize_unique_csv(p.AGES,n_ile,N);
-    initialize_repeated_csv(p.AGES,vax_ile,VC);
-    initialize_repeated_csv(p.AGES,im_ile,im_prop);
+    mu_i1 = initialize_unique_csv(p.AGES,ifr_file,mu_i1);
+    m = initialize_unique_csv(p.AGES,m_file,p.m);
+    N = initialize_unique_csv(p.AGES,n_file,N);
+    initialize_repeated_csv(p.AGES,vax_file,VC);
+    initialize_repeated_csv(p.AGES,im_file,im_prop);
     initialize_repeated_csv(p.AGES,icu_file,ICU_raio);
-    read_contact_matrices(p.AGES, overall_ile,cm_overall);
+    read_contact_matrices(p.AGES, overall_file,cm_overall);
     read_contact_matrices(p.AGES, school_file,cm_school);
     int counter = 0;
     fprintf(stderr,"READING STUFFF");
@@ -491,6 +448,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             	        I1[rand_number] += 1; 
             	    }
             	}
+            q1 = q_calc(S,I1,R1,V,N,M,mu_i1,m,p.R01,p)
             }
         }
 
@@ -1003,14 +961,3 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     fclose(fptr);
     return; 
 }
-
-    //oupu becomes massive due o many years 
-    //print only wha's needed 
-    // 1) write a sprintf when loopintg over age, if 40 compartments, looping over age writing 40 comparmens
-    // 2) no interesintg int everyhintg, intsead of printintg 40 comparmens, wrie 10 - someimes don' need oupu for everyday
-    // Incidience of cases, print everyday 
-    // Prevalnce do yearly 
-    // Deahs should be daily, hospia
-    // Want: intcidence of variables ha change int shor erm
-    //    -> cases, deahs, hospilizaions
-    // print out daily vaccintaion rae for debuggintg 

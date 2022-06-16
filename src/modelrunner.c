@@ -47,31 +47,28 @@ int main(int argc, char* argv[]){
     int vax_percent = percent_number / 10;
     p.ft = p.years * 365;
 
-        fprintf(stderr,"STARTING IFR!");
-        fflush(stderr);
 
 
 
-    const char *ifr_ile =  "../data/ifr.csv";
-    const char *vax_ile =  "../data/dailyvax.csv";
-    const char *m_ile =  "../data/new_mort.csv";
-    const char *n_ile = "../data/us_pop.csv";
-    const char *im_ile = "../data/immigration_prop.csv";
-    const char *overall_ile = "../data/overall_contacts.csv";
+    const char *ifr_file =  "../data/ifr.csv";
+    const char *vax_file =  "../data/dailyvax.csv";
+    const char *m_file =  "../data/new_mort.csv";
+    const char *n_file = "../data/us_pop.csv";
+    const char *im_file = "../data/immigration_prop.csv";
+    const char *overall_file = "../data/overall_contacts.csv";
     const char *icu_file = "../data/icu_ratio.csv";
     const char *school_file = "../data/school_contacts.csv";    
     p.m = (double*) malloc(p.AGES * sizeof(double));
     p.mu = (double*) malloc(p.AGES * sizeof(double));
     p.M = (double**) malloc(p.AGES * sizeof(double*));
-    initialize_unique_csv(p.AGES,m_ile,p.m);
-    initialize_unique_csv(p.AGES,ifr_ile,p.mu);
-    read_contact_matrices(p.AGES, overall_ile,p.M);
+    p.q1 = q_calc(double* S,double* I,double* R,double* V, double* N,double** M,double* mu, double* m,int R0,struct ParameterSet p)
+    initialize_unique_csv(p.AGES,m_file,p.m);
+    initialize_unique_csv(p.AGES,ifr_file,p.mu);
+    read_contact_matrices(p.AGES, overall_file,p.M);
 
     //Running each vaccine percentage for number given by sim_number
     for(int j = 0; j < run_number+1; j++){
 
-       fprintf(stderr,"RUNS!");
-       fflush(stderr);
        new_file = generate_names(vax_percent,j);
        // stoch_model takes in a vv_value, iteration number, file_name to write to, parameters, and 
       // result format

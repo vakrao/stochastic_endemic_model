@@ -35,6 +35,7 @@ struct ParameterSet{
      int first_vax_seas_dur;
      int perm_vax_seas_dur;
      double R01; 
+     float q1;
      double R02;
      double gamma;
      // immunity values
