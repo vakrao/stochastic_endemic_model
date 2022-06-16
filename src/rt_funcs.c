@@ -18,7 +18,7 @@
 float rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,double* mu, double* m,double q1,struct ParameterSet p){
     gsl_matrix *FL = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
     gsl_matrix *G = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
-    gsl_permutation *q = gsl_permutation_alloc(p.AGES*2);
+    gsl_permutation *inv_perm = gsl_permutation_alloc(p.AGES*2);
     gsl_matrix *K = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
     gsl_matrix_set_zero(FL);
     gsl_matrix_set_zero(G);
@@ -72,10 +72,10 @@ float rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,doub
         }
     }
     // take inverse now!
-    gsl_linalg_LU_decomp(FL,q,&s);
+    gsl_linalg_LU_decomp(FL,inv_perm,&s);
     gsl_matrix *inv = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
-    gsl_linalg_LU_invert(FL,q,inv);
-    gsl_permutation_free(q);
+    gsl_linalg_LU_invert(FL,inv_perm,inv);
+    gsl_permutation_free(inv_perm);
     gsl_matrix_scale(inv,1.0);
     gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,inv,G,0.0,K);
 
@@ -91,7 +91,7 @@ float rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,doub
 float q_calc(double* S,double* I,double* R,double* V, double* N,double** M,double* mu, double* m,int R0,struct ParameterSet p){
     gsl_matrix *FL = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
     gsl_matrix *G = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
-    gsl_permutation *q = gsl_permutation_alloc(p.AGES*2);
+    gsl_permutation *inv_perm = gsl_permutation_alloc(p.AGES*2);
     gsl_matrix *K = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
     gsl_matrix_set_zero(FL);
     gsl_matrix_set_zero(G);
@@ -145,10 +145,10 @@ float q_calc(double* S,double* I,double* R,double* V, double* N,double** M,doubl
         }
     }
     // take inverse now!
-    gsl_linalg_LU_decomp(FL,q,&s);
+    gsl_linalg_LU_decomp(FL,inv_perm,&s);
     gsl_matrix *inv = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
-    gsl_linalg_LU_invert(FL,q,inv);
-    gsl_permutation_free(q);
+    gsl_linalg_LU_invert(FL,inv_perm,inv);
+    gsl_permutation_free(inv_perm);
     gsl_matrix_scale(inv,1.0);
     gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,inv,G,0.0,K);
 

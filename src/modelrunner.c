@@ -48,8 +48,6 @@ int main(int argc, char* argv[]){
     p.ft = p.years * 365;
 
 
-
-
     const char *ifr_file =  "../data/ifr.csv";
     const char *vax_file =  "../data/dailyvax.csv";
     const char *m_file =  "../data/new_mort.csv";
@@ -61,7 +59,6 @@ int main(int argc, char* argv[]){
     p.m = (double*) malloc(p.AGES * sizeof(double));
     p.mu = (double*) malloc(p.AGES * sizeof(double));
     p.M = (double**) malloc(p.AGES * sizeof(double*));
-    p.q1 = q_calc(double* S,double* I,double* R,double* V, double* N,double** M,double* mu, double* m,int R0,struct ParameterSet p)
     initialize_unique_csv(p.AGES,m_file,p.m);
     initialize_unique_csv(p.AGES,ifr_file,p.mu);
     read_contact_matrices(p.AGES, overall_file,p.M);

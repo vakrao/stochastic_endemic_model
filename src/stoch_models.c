@@ -158,10 +158,12 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
     // Be specific abou names 
     // Be super-general abou names...? Use 3-d array 
+    fprintf(stderr,"BEFORE Q1! \n");
+    fflush(stderr);
 
-    float q1 = p.q1;
     float R02 = 0;
     int t = 0;
+    float q1 = 0;
     float q2  = 0;
     const float q2_value = 0;
 
@@ -253,8 +255,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     read_contact_matrices(p.AGES, overall_file,cm_overall);
     read_contact_matrices(p.AGES, school_file,cm_school);
     int counter = 0;
-    fprintf(stderr,"READING STUFFF");
-    fflush(stderr);
     // Setting values for theta, mu, and m
     for(int i = 0; i < p.AGES; i++){
         theta[i] = 0;
@@ -353,8 +353,9 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     t = 0;
     double total_lambda = 0;
     int rand_number = 0;
-    fprintf(stderr,"GETTING INTO TIME LOOP! \n");
-    fflush(stderr);
+//    q1 = q_calc(S,I1,R1,V,N,M,mu_i1,m,q1,p);
+//    fprintf(stderr,"Q1 Value: %lf! \n",q1);
+//    fflush(stderr);
     //Time loop starts here
     while(t < p.ft){
 	// School contact matrix control flow
@@ -435,6 +436,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
                     generate = 0;
                  }
             }
+            // Cumulatively create N
             for(int k=0; k < p.AGES; k++){
                N[k] = S[k] + I1[k] + I2[k]+ VI1[k]+ VI2[k]+ V[k]+ R1[k]+ R2[k]+ H1[k]+ H2[k]+ VR1[k]+ VR2[k];
             }
@@ -448,7 +450,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             	        I1[rand_number] += 1; 
             	    }
             	}
-            q1 = q_calc(S,I1,R1,V,N,M,mu_i1,m,p.R01,p)
+                q1 = q_calc(S,I1,R1,V,N,M,mu_i1,m,p.R01,p);
             }
         }
 
@@ -476,17 +478,18 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             else{
                 sv[i] = 0;
             }
+            // SD natural mortality exit
 
             if(S[i] - Xsi1[i] - Xsi2[i] - sv[i] >= 1){
                 temp_transition = (S[i] - Xsi1[i] - Xsi2[i] - sv[i]);
                 SD[i] = poisson_draw(r,temp_transition * m[i],temp_transition);
-           }
+            }
             else{
                 SD[i] = 0;
-           }
+            }
            // V compartment exit logic
-           Vs[i] = poisson_draw(r,V[i]*(1/p.time_of_immunity),V[i]);
-
+            Vs[i] = poisson_draw(r,V[i]*(1/p.time_of_immunity),V[i]);
+            
             if(V[i] - Vs[i] >= 1){
                 temp_transition = V[i] - Vs[i];
                 Xvvi1[i] = poisson_draw(r,temp_transition * lambda1 * (1-p.sigma_i1),temp_transition);
@@ -494,7 +497,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             else{
                 Xvvi1[i] = 0;
             }
-
             if(V[i] - Vs[i] - Xvvi1[i] >= 1){
                 temp_transition = V[i] - Vs[i] - Xvvi1[i];
                 Xvvi2[i] = poisson_draw(r,temp_transition * lambda2 * (1-p.sigma_i2),temp_transition);
@@ -509,7 +511,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             else{
                 VD[i] = 0;
             }
-	    // Infected Strain One Logic
+	        // Infected Strain One Logic
 
             if(I1[i] >= 1){
                 Y1[i] = poisson_draw(r,I1[i]*p.gamma,I1[i]);
@@ -657,7 +659,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
             //R2 exit logic
             omega2[i] = poisson_draw(r,R2[i]*(1/p.time_of_waning_natural),R2[i]);
-	    //Recovered Two Transitions
             if(R2[i] - omega2[i]>= 1){
                 temp_transition = R2[i] - omega2[i];
                 r2v[i] = poisson_draw(r,temp_transition*psi[t]*age_based_coverage[i],temp_transition);
@@ -749,6 +750,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
            else{
                H2D[i] = 0;
            }
+           // immigration logic
 
             IS[i] =  poisson_draw(r,(S[i] / N[i]) * im_prop[i],S[i]);
             IV[i] =  poisson_draw(r,(V[i] / N[i]) * im_prop[i],V[i]);
@@ -761,6 +763,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             IVI2[i]= poisson_draw(r,(VI2[i] / N[i]) * im_prop[i],VI2[i]);
             IVR2[i]= poisson_draw(r,(VR2[i] / N[i]) * im_prop[i],VR2[i]);
 
+           // birth logic
             if(i == 0){
                 float totalN = total(N);
                 SB[i] = poisson_draw(r,totalN*p.b,totalN);
@@ -822,26 +825,26 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
       }
 
-        if(setting == 2){
-//              Total Age Agnostic data-saving
-            fprintf(fptr,"%d,%.2f,%f,N\n",t,vv,total(N));
-            fprintf(fptr,"%d,%.2f,%f,S\n",t,vv,total(S));
-            fprintf(fptr,"%d,%.2f,%f,I1\n",t,vv,total(I1));
-            fprintf(fptr,"%d,%.2f,%f,I2\n",t,vv,total(I2));
-            fprintf(fptr,"%d,%.2f,%f,R1\n",t,vv,total(R1));
-            fprintf(fptr,"%d,%.2f,%f,R2\n",t,vv,total(R2));
-            fprintf(fptr,"%d,%.2f,%f,V\n",t,vv,total(V));
-            fprintf(fptr,"%d,%.2f,%f,XIVI1\n",t,vv,total(XIV1));
-            fprintf(fptr,"%d,%.2f,%f,XIV2\n",t,vv,total(XIV2));
-            fprintf(fptr,"%d,%.2f,%f,Xsi1\n",t,vv,total(Xsi1));
-            fprintf(fptr,"%d,%.2f,%f,Xsi2\n",t,vv,total(Xsi2));
-            fprintf(fptr,"%d,%.2f,%f,XD\n",t,vv,total(XD));
-            fprintf(fptr,"%d,%.2f,%f,VR1\n",t,vv,total(VR1));
-            fprintf(fptr,"%d,%.2f,%f,VR2\n",t,vv,total(VR2));
-            fprintf(fptr,"%d,%.2f,%f,H1\n",t,vv,total(H1));
-            fprintf(fptr,"%d,%.2f,%f,H2\n",t,vv,total(H2));
-        }
-        
+      if(setting == 2){
+//            Total Age Agnostic data-saving
+          fprintf(fptr,"%d,%.2f,%f,N\n",t,vv,total(N));
+          fprintf(fptr,"%d,%.2f,%f,S\n",t,vv,total(S));
+          fprintf(fptr,"%d,%.2f,%f,I1\n",t,vv,total(I1));
+          fprintf(fptr,"%d,%.2f,%f,I2\n",t,vv,total(I2));
+          fprintf(fptr,"%d,%.2f,%f,R1\n",t,vv,total(R1));
+          fprintf(fptr,"%d,%.2f,%f,R2\n",t,vv,total(R2));
+          fprintf(fptr,"%d,%.2f,%f,V\n",t,vv,total(V));
+          fprintf(fptr,"%d,%.2f,%f,XIVI1\n",t,vv,total(XIV1));
+          fprintf(fptr,"%d,%.2f,%f,XIV2\n",t,vv,total(XIV2));
+          fprintf(fptr,"%d,%.2f,%f,Xsi1\n",t,vv,total(Xsi1));
+          fprintf(fptr,"%d,%.2f,%f,Xsi2\n",t,vv,total(Xsi2));
+          fprintf(fptr,"%d,%.2f,%f,XD\n",t,vv,total(XD));
+          fprintf(fptr,"%d,%.2f,%f,VR1\n",t,vv,total(VR1));
+          fprintf(fptr,"%d,%.2f,%f,VR2\n",t,vv,total(VR2));
+          fprintf(fptr,"%d,%.2f,%f,H1\n",t,vv,total(H1));
+          fprintf(fptr,"%d,%.2f,%f,H2\n",t,vv,total(H2));
+      }
+       
         total_lambda = 0;
         // vv = dynamic_vv()
         //zero out all transitions
@@ -917,8 +920,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         }
         t += 1;
         // calcualte rt-value
-    float rt = rt_calc(S,I1,R1,V,N,M,mu_i1,m,q1,p);
-    fprintf(fptr,"%d,%.2f,%d,%f,%d,RT\n",t,vv,-1,rt,run_number);
+        float rt = rt_calc(S,I1,R1,V,N,M,mu_i1,m,q1,p);
+        fprintf(fptr,"%d,%.2f,%d,%f,%d,RT\n",t,vv,-1,rt,run_number);
     }
     // now, we free all associated memory
     free(m);
