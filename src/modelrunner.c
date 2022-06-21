@@ -25,7 +25,7 @@ int main(int argc, char* argv[]){
         return 0;
     }
 
-    const char *vv_title =  "../data/vv_vals.csv";
+    const char *vv_title =  "../params/vv_vals.csv";
     struct ParameterSet p;
     char* file_name = (char*)malloc(sizeof(char)*2000);
     int run_number = atoi(argv[1]);
@@ -48,14 +48,14 @@ int main(int argc, char* argv[]){
     p.ft = p.years * 365;
 
 
-    const char *ifr_file =  "../data/ifr.csv";
-    const char *vax_file =  "../data/dailyvax.csv";
-    const char *m_file =  "../data/new_mort.csv";
-    const char *n_file = "../data/us_pop.csv";
-    const char *im_file = "../data/immigration_prop.csv";
-    const char *overall_file = "../data/overall_contacts.csv";
-    const char *icu_file = "../data/icu_ratio.csv";
-    const char *school_file = "../data/school_contacts.csv";    
+    const char *ifr_file =  "../params/ifr.csv";
+    const char *vax_file =  "../params/dailyvax.csv";
+    const char *m_file =  "../params/new_mort.csv";
+    const char *n_file = "../params/us_pop.csv";
+    const char *im_file = "../params/immigration_prop.csv";
+    const char *overall_file = "../params/overall_contacts.csv";
+    const char *icu_file = "../params/icu_ratio.csv";
+    const char *school_file = "../params/school_contacts.csv";    
     p.m = (double*) malloc(p.AGES * sizeof(double));
     p.mu = (double*) malloc(p.AGES * sizeof(double));
     p.M = (double**) malloc(p.AGES * sizeof(double*));
@@ -64,21 +64,19 @@ int main(int argc, char* argv[]){
     read_contact_matrices(p.AGES, overall_file,p.M);
 
     //Running each vaccine percentage for number given by sim_number
-    for(int j = 0; j < run_number+1; j++){
+    for(int j = 0; j < run_number; j++){
 
-       new_file = generate_names(vax_percent,j);
+       new_file = generate_names(vax_percent,j+1);
        // stoch_model takes in a vv_value, iteration number, file_name to write to, parameters, and 
       // result format
       //model_type 0 -> ages and all data
       //model_type 1 -> ages and lessened data 
       //model_type 2-> age-agnostic data
-       stoch_model(p.vv_values[vv_index],j,new_file,p,model_type);
+       stoch_model(p.vv_values[vv_index],j+1,new_file,p,model_type);
 	   free(new_file);
+	   new_file = (char*)malloc(sizeof(char)*90);
      } 
-	new_file = (char*)malloc(sizeof(char)*90);
     free(p.vv_values);
     free(dynamic_title);
     free(new_file);
-    free(p.mu);
-    free(file_name);
 }

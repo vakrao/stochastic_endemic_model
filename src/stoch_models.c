@@ -54,9 +54,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     r = gsl_rng_alloc(gsl_rng_default);
     gsl_rng_set(r,value);
 
-
-
-    
     for(int i = 0; i < p.AGES; i++){
 	    p.age_based_coverage[i] = 0; 
     }
@@ -116,14 +113,14 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
 
 
-    const char *ifr_file =  "../data/ifr.csv";
-    const char *vax_file =  "../data/dailyvax.csv";
-    const char *m_file =  "../data/new_mort.csv";
-    const char *n_file = "../data/us_pop.csv";
-    const char *im_file = "../data/immigration_prop.csv";
-    const char *overall_file = "../data/overall_contacts.csv";
-    const char *icu_file = "../data/icu_ratio.csv";
-    const char *school_file = "../data/school_contacts.csv";
+    const char *ifr_file =  "../params/ifr.csv";
+    const char *vax_file =  "../params/dailyvax.csv";
+    const char *m_file =  "../params/new_mort.csv";
+    const char *n_file = "../params/us_pop.csv";
+    const char *im_file = "../params/immigration_prop.csv";
+    const char *overall_file = "../params/overall_contacts.csv";
+    const char *icu_file = "../params/icu_ratio.csv";
+    const char *school_file = "../params/school_contacts.csv";
     int psi_counter = 0;
     int perm_unvax_period = p.school_spring + p.school_break;
     int perm_vax_period = perm_unvax_period + p.perm_vax_seas_dur;
@@ -158,8 +155,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
     // Be specific abou names 
     // Be super-general abou names...? Use 3-d array 
-    fprintf(stderr,"BEFORE Q1! \n");
-    fflush(stderr);
 
     float R02 = 0;
     int t = 0;
@@ -921,9 +916,11 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         t += 1;
         // calcualte rt-value
         float rt = rt_calc(S,I1,R1,V,N,M,mu_i1,m,q1,p);
-        fprintf(fptr,"%d,%.2f,%d,%f,%d,RT\n",t,vv,-1,rt,run_number);
+        int rt_age = -1;
+        fprintf(fptr,"%d,%.2f,%d,%.2f,%d,RT\n",t,vv,90,rt,run_number);
     }
     // now, we free all associated memory
+    //free(p);
     free(m);
     free(mu_i1);
     free(mu_i2);
@@ -959,7 +956,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     }
     free(cm_school);
     free(cm_overall);
-    free(M);
     gsl_rng_free(r);
     fclose(fptr);
     return; 

@@ -47,7 +47,7 @@ float rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,doub
     // creating gain matrix!
     for(int i = 0; i < p.AGES*2; i++){
         for(int j = 0; j < p.AGES*2;j++){
-            double A = M[row_counter][column_counter]*(N[row_counter]/N[column_counter])*q1; 
+            double A = M[row_counter][column_counter]*(N[row_counter]/N[column_counter]); 
             double B = M[row_counter][column_counter]*(N[row_counter]/N[column_counter])*p.sigma_d1; 
             double C = V[row_counter]*(1-p.sigma_i1)*(M[row_counter][column_counter]/N[column_counter]); 
             double D = V[row_counter]*(1-p.sigma_i1)*p.sigma_q1*(M[row_counter][column_counter]/N[column_counter]); 
@@ -84,8 +84,13 @@ float rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,doub
     gsl_vector *ev = gsl_vector_alloc(p.AGES*2);
     gsl_vector_set_zero(ev);
     gsl_eigen_symm(K, ev, w);
-    gsl_eigen_symm_free(w);
-    double rt = gsl_vector_max(ev); 
+    double rt = gsl_vector_max(ev)*q1; 
+    gsl_matrix_free(FL);
+    gsl_matrix_free(G);
+    gsl_matrix_free(K);
+    gsl_matrix_free(inv);
+   
+
     return rt;
 }
 float q_calc(double* S,double* I,double* R,double* V, double* N,double** M,double* mu, double* m,int R0,struct ParameterSet p){
