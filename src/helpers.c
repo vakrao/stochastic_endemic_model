@@ -129,9 +129,12 @@ double total(double* L){
 
 
 
-
-double dynamic_vv(double* ABR, double* G, int VS, double ideal_vax_coverage){
-    float total_N = total(G);
+/*
+Dynamic_vv calculates a new vv value based on the population at the time, the vaccine regime
+the desired vaccine coverage percentage 
+*/
+double dynamic_vv(double* ABR, double* N, int VR, double ideal_vax_coverage){
+    float total_N = total(N);
     int counter = 1; 
     float vv_val= 0;
     float test_WVC = 0;
@@ -140,8 +143,8 @@ double dynamic_vv(double* ABR, double* G, int VS, double ideal_vax_coverage){
         for(int j = 0; j < AGES; j++){
             test_WVC += ABR[j]*total_N;
         }
-        test_WVC = test_WVC*test_vv*VS;
-        if(abs(test_vv - ideal_vax_coverage) < .0001){
+        test_WVC = test_WVC*test_vv*VR;
+        if(abs(ideal_vax_coverage - test_WVC) < .0001){
             vv_val = test_vv;
             counter += 1;
             break;

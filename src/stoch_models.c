@@ -42,7 +42,7 @@ double poisson_draw(gsl_rng *r,double mu, double max_value){
 
 
 
-void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,int setting){
+void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,int setting, int vax_percent){
     FILE *fptr = fopen(fileName,"w");
     double age_based_coverage[p.AGES];
     srand(time(NULL));
@@ -78,6 +78,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             p.age_based_coverage[i] = (.698*vv)/365.0;
         }
     }
+    int vax_duration = 0;
     double* m = (double*) malloc(p.AGES * sizeof(double));
     double** cm_school = (double**) malloc(p.AGES * sizeof(double*));
     double** cm_overall = (double**) malloc(p.AGES * sizeof(double*));
@@ -406,6 +407,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             VR1= ageing(VR1, p.AGES);
             VR2= ageing(VR2, p.AGES);
             S[0] = 1;
+            vax_duration = p.perm_vax_seas_dur;
             // Importation logic
             if(t < p.variant_start){
               for(int i = 0 ; i < new_yearly_imports; i++){
@@ -446,6 +448,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             	    }
             	}
                 q1 = q_calc(S,I1,R1,V,N,M,mu_i1,m,p.R01,p);
+                vax_duration = p.first_vax_seas_dur;
             }
         }
 
@@ -468,7 +471,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             // S -> V compartment exit logic
             if(S[i] - Xsi1[i] - Xsi2[i] >= 1){
                 temp_transition = (S[i] - Xsi1[i] - Xsi2[i]);
-                sv[i] = poisson_draw(r,temp_transition*psi[t]*age_based_coverage[i],temp_transition);
+                sv[i] = poisson_draw(r,temp_transition*psi[t]*p.age_based_coverage[i],temp_transition);
             }
             else{
                 sv[i] = 0;
@@ -630,7 +633,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 	    //Recovered One transitions
             if(R1[i] - omega1[i]>= 1){
                 temp_transition = R1[i] - omega1[i];
-                r1v[i] = poisson_draw(r,temp_transition*psi[t]*age_based_coverage[i],temp_transition);
+                r1v[i] = poisson_draw(r,temp_transition*psi[t]*p.age_based_coverage[i],temp_transition);
             }
             else{
                 r1v[i] = 0;
@@ -656,7 +659,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             omega2[i] = poisson_draw(r,R2[i]*(1/p.time_of_waning_natural),R2[i]);
             if(R2[i] - omega2[i]>= 1){
                 temp_transition = R2[i] - omega2[i];
-                r2v[i] = poisson_draw(r,temp_transition*psi[t]*age_based_coverage[i],temp_transition);
+                r2v[i] = poisson_draw(r,temp_transition*psi[t]*p.age_based_coverage[i],temp_transition);
             }
             else{
                 r2v[i] = 0;
@@ -914,10 +917,11 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             IVR2[c] = 0;
         }
         t += 1;
-        // calcualte rt-value
         float rt = rt_calc(S,I1,R1,V,N,M,mu_i1,m,q1,p);
+        // calcualte rt-value
         int rt_age = -1;
         fprintf(fptr,"%d,%.2f,%d,%.2f,%d,RT\n",t,vv,90,rt,run_number);
+        vv = dynamic_vv(p.age_based_coverage,N,vax_duration,vax_percent);
     }
     // now, we free all associated memory
     //free(p);
