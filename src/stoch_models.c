@@ -78,6 +78,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             p.age_based_coverage[i] = (.698*vv)/365.0;
         }
     }
+
     int vax_duration = 0;
     double* m = (double*) malloc(p.AGES * sizeof(double));
     double** cm_school = (double**) malloc(p.AGES * sizeof(double*));
@@ -920,8 +921,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         float rt = rt_calc(S,I1,R1,V,N,M,mu_i1,m,q1,p);
         // calcualte rt-value
         int rt_age = -1;
-        fprintf(fptr,"%d,%.2f,%d,%.2f,%d,RT\n",t,vv,90,rt,run_number);
-        vv = dynamic_vv(p.age_based_coverage,N,vax_duration,vax_percent);
+//        vv = dynamic_vv(p.age_based_coverage,N,vax_duration,vax_percent);
     }
     // now, we free all associated memory
     //free(p);
