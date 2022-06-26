@@ -90,13 +90,7 @@ double find_lambda(double q,int age, double sigma, double* I, double* VI, double
 double* ageing(double* L, int a){
     double *new_L = (double*) malloc(AGES*sizeof(double));
     for(int i = 0; i < AGES; i++){
-        if(i == 0){
-            new_L[i] = 10;
-        }
-        else
-        {
-            new_L[i] = L[i-1];
-        }
+        new_L[i] = L[i-1];
     }
     free(L);
     return new_L;

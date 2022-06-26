@@ -76,7 +76,7 @@ float rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,doub
     gsl_matrix *inv = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
     gsl_linalg_LU_invert(FL,inv_perm,inv);
     gsl_permutation_free(inv_perm);
-    gsl_matrix_scale(inv,-1.0);
+    //gsl_matrix_scale(inv,-1.0);
     gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,inv,G,0.0,K);
 
     
@@ -154,7 +154,7 @@ float q_calc(double* S,double* I,double* R,double* V, double* N,double** M,doubl
     gsl_matrix *inv = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
     gsl_linalg_LU_invert(FL,inv_perm,inv);
     gsl_permutation_free(inv_perm);
-    gsl_matrix_scale(inv,-1.0);
+//    gsl_matrix_scale(inv,-1.0);
     gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,inv,G,0.0,K);
 
     

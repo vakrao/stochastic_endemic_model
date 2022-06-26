@@ -22,8 +22,6 @@
 
 
 double poisson_draw(gsl_rng *r,double mu, double max_value){
-//    fprintf(stderr,"MU: %f",mu);
-//    fflush(stderr);
     if(mu == 0){
 	    return 0;
     }
@@ -267,19 +265,18 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         for(int j = 0; j < p.AGES; j++){
             M[c][j] = cm_overall[c][j];
         }
-        VR2[c] = 1;
         I1[c] = 0;
-        VI1[c] = 1; 
-        R1[c] = 1;
-        VR1[c] = 1;
-        VR2[c] = 1;
-        H1[c] = 1;
+        VI1[c] = 0; 
+        R1[c] = 0;
+        VR1[c] = 0;
+        VR2[c] = 0;
+        H1[c] = 0;
         V[c] = 0;
         I2[c] = 0; 
         VI2[c] = 0;
-        R2[c] = 1; 
+        R2[c] = 0; 
         H2[c] = 0; 
-        Xsi1[c] = 1;
+        Xsi1[c] = 0;
         Xsi2[c] = 0;
         Xr1[c] = 0;
         Y1[c] = 0;
@@ -350,6 +347,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     t = 0;
     double total_lambda = 0;
     int rand_number = 0;
+    float largest_Xsi1 = 0;
 //    q1 = q_calc(S,I1,R1,V,N,M,mu_i1,m,q1,p);
 //    fprintf(stderr,"Q1 Value: %lf! \n",q1);
 //    fflush(stderr);
@@ -369,54 +367,62 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
                     M[i][j] += cm_school[i][j];
 	         	}
 	        }
-         }
+        }
 	    // Variant control flow 
-        if(t == p.variant_start){
-            R02 = p.R02;
-             for(int i = 0 ; i < new_yearly_imports; i++){
-                 rand_number = rand() % p.AGES;
-                 if(S[rand_number] > 0){
-                     S[rand_number] = S[rand_number] -  1; 
-                     I2[rand_number] = I2[rand_number] + 1; 
-                 }
-             }
-             q2 = q2_value;
-         }
-           else{
-                if(t < p.variant_start && t == 0){
+       // if(t == p.variant_start){
+       //     R02 = p.R02;
+       //      for(int i = 0 ; i < new_yearly_imports; i++){
+       //          rand_number = rand() % p.AGES;
+       //          if(S[rand_number] > 0){
+       //              S[rand_number] = S[rand_number] -  1; 
+       //              I2[rand_number] = I2[rand_number] + 1; 
+       //          }
+       //      }
+       //      q2 = q2_value;
+       //  }
+           
                     for(int i = 0 ; i < new_yearly_imports; i++){
                         rand_number = rand() % p.AGES;
                         if(S[rand_number] > 0){
                             S[rand_number] = S[rand_number] - 1; 
-                            I1[rand_number] = I2[rand_number] + 1; 
+                            I1[rand_number] = I1[rand_number] + 1; 
                         }
                     }
                    q2 = 0;  
-                }
-            }
+           
 
             // Ageing Loop
         if(t % 365 == 0  & t != 0){
             S = ageing(S, p.AGES);
             I1 = ageing(I1, p.AGES);
-            I2 = ageing(I2, p.AGES);
-            VI1 = ageing(VI1, p.AGES);
-            VI2 = ageing(VI2, p.AGES);
-            V = ageing(V, p.AGES);
             R1= ageing(R1, p.AGES);
-            H2= ageing(H2, p.AGES);
-            VR1= ageing(VR1, p.AGES);
-            VR2= ageing(VR2, p.AGES);
+            if(t > p.vax_start){
+                V = ageing(V, p.AGES);
+                VR1= ageing(VR1, p.AGES);
+                VI1 = ageing(VI1, p.AGES);
+
+            }
+            if(t > p.variant_start){
+                I2 = ageing(I2, p.AGES);
+                H2= ageing(H2, p.AGES);
+                VR2= ageing(VR2, p.AGES);
+                VI2 = ageing(VI2, p.AGES);
+
+            }
             S[0] = 1;
+            int gens = 0;
             vax_duration = p.perm_vax_seas_dur;
             // Importation logic
             if(t < p.variant_start){
               for(int i = 0 ; i < new_yearly_imports; i++){
+                while(gens == 0){
                   rand_number = rand() % p.AGES;
                   if(S[rand_number] > 0){
                       S[rand_number] -= 1; 
                       I1[rand_number] += 1; 
+                      gens = 1;
                   }
+                }
               }
             }
             else{
@@ -449,6 +455,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             	    }
             	}
                 q1 = q_calc(S,I1,R1,V,N,M,mu_i1,m,p.R01,p);
+                q2 = 0;
                 vax_duration = p.first_vax_seas_dur;
             }
         }
@@ -457,6 +464,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         for(int i=0; i < p.AGES; i++){
 	      // Determining attack rate!
             double lambda1 = find_lambda(q1,i,p.sigma_q1,I1,VI1,M,N,S);
+           // fprintf(stderr,"Q1 is : %lf \n",q1);
+           // fflush(stderr);
             total_lambda += lambda1;
             double lambda2 = find_lambda(q2,i,p.sigma_q2,I2,VI2,M,N,S);
             double lambda_mean = (S[i] * lambda1);
@@ -468,7 +477,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             else{
                 Xsi2[i] = 0;
             }
-
             // S -> V compartment exit logic
             if(S[i] - Xsi1[i] - Xsi2[i] >= 1){
                 temp_transition = (S[i] - Xsi1[i] - Xsi2[i]);
@@ -605,7 +613,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             }
 
             YV2[i] = poisson_draw(r,VI2[i]*p.gamma,VI2[i]);
-
             if(VI2[i] - YV2[i] >= 1){
                 temp_transition = (VI2[i] - YV2[i]);
                 theta4[i] = poisson_draw(r,temp_transition*theta[i]*p.sigma_h2,temp_transition);
@@ -757,10 +764,12 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             IH1[i] = poisson_draw(r,((H1[i] / N[i])) * im_prop[i],H1[i]);
             IR1[i] = poisson_draw(r,(R1[i] / N[i]) * im_prop[i],R1[i]);
             IVI1[i]= poisson_draw(r,(VI1[i] / N[i]) * im_prop[i],VI1[i]);
-            IH2[i] = poisson_draw(r,(H2[i] / N[i]) * im_prop[i],H2[i]);
-            IR2[i] = poisson_draw(r,(R2[i] / N[i]) * im_prop[i],R2[i]);
-            IVI2[i]= poisson_draw(r,(VI2[i] / N[i]) * im_prop[i],VI2[i]);
-            IVR2[i]= poisson_draw(r,(VR2[i] / N[i]) * im_prop[i],VR2[i]);
+            if(t > p.variant_start){
+                IH2[i] = poisson_draw(r,(H2[i] / N[i]) * im_prop[i],H2[i]);
+                IR2[i] = poisson_draw(r,(R2[i] / N[i]) * im_prop[i],R2[i]);
+                IVI2[i]= poisson_draw(r,(VI2[i] / N[i]) * im_prop[i],VI2[i]);
+                IVR2[i]= poisson_draw(r,(VR2[i] / N[i]) * im_prop[i],VR2[i]);
+            }
 
            // birth logic
             if(i == 0){

@@ -72,6 +72,8 @@ int main(int argc, char* argv[]){
       //model_type 0 -> ages and all data
       //model_type 1 -> ages and lessened data 
       //model_type 2-> age-agnostic data
+      fprintf(stderr,"VV VALUE: %lf",p.vv_values[vv_index]);
+      fflush(stderr);
        stoch_model(p.vv_values[vv_index],j+1,new_file,p,model_type,percent_number);
 	   free(new_file);
 	   new_file = (char*)malloc(sizeof(char)*90);
