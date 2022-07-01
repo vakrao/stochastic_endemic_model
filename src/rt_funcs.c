@@ -33,12 +33,12 @@ float rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,doub
     // Setting values for flow OUT of infected subsystem.
     for(int i = 0; i < p.AGES*2; i++){
        if(change == true){
-           value = (p.gamma + m[adjusted_index] + mu[adjusted_index]*p.gamma);
+           value = -1*(p.gamma + m[adjusted_index] + mu[adjusted_index]*p.gamma);
            gsl_matrix_set(FL,i,i,value);
            change = false;
        } 
        else{
-           value = (p.gamma + m[adjusted_index] + mu[adjusted_index])*(1-p.sigma_d1)*(p.gamma);
+           value = -1*(p.gamma + m[adjusted_index] + mu[adjusted_index]*(1-p.sigma_d1)*(p.gamma));
            gsl_matrix_set(FL,i,i,value);
            adjusted_index += 1;
            change = true;
@@ -47,10 +47,14 @@ float rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,doub
     // creating gain matrix!
     for(int i = 0; i < p.AGES*2; i++){
         for(int j = 0; j < p.AGES*2;j++){
-            double A = M[row_counter][column_counter]*(N[row_counter]/N[column_counter]); 
-            double B = M[row_counter][column_counter]*(N[row_counter]/N[column_counter])*p.sigma_d1; 
-            double C = V[row_counter]*(1-p.sigma_i1)*(M[row_counter][column_counter]/N[column_counter]); 
-            double D = V[row_counter]*(1-p.sigma_i1)*p.sigma_q1*(M[row_counter][column_counter]/N[column_counter]); 
+            double A = M[row_counter][column_counter]*(S[row_counter]/N[column_counter]); 
+            double B = M[row_counter][column_counter]*(S[row_counter]/N[column_counter])*p.sigma_d1; 
+            //double A = 0.3;
+            //double B = 0.3;
+            double C = M[row_counter][column_counter]*((V[row_counter]*(1-p.sigma_i1))/N[column_counter]); 
+            double D = M[row_counter][column_counter]*((V[row_counter]*(1-p.sigma_i1))/N[column_counter])*p.sigma_d1; 
+//            double C = 3;
+//            double D = 3;
              if((i % 2 == 0) && (j % 2 == 0)){
                  gsl_matrix_set(G,i,j,A);
              } 
@@ -76,8 +80,8 @@ float rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,doub
     gsl_matrix *inv = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
     gsl_linalg_LU_invert(FL,inv_perm,inv);
     gsl_permutation_free(inv_perm);
-    //gsl_matrix_scale(inv,-1.0);
     gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,inv,G,0.0,K);
+    gsl_matrix_scale(K,-1.0);
 
     
     gsl_eigen_symm_workspace *w = gsl_eigen_symm_alloc(p.AGES*2);
@@ -89,6 +93,7 @@ float rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,doub
     gsl_matrix_free(G);
     gsl_matrix_free(K);
     gsl_matrix_free(inv);
+    gsl_eigen_symm_free(w);
    
 
     return rt;
@@ -111,12 +116,12 @@ float q_calc(double* S,double* I,double* R,double* V, double* N,double** M,doubl
     // Setting values for flow OUT of infected subsystem.
     for(int i = 0; i < p.AGES*2; i++){
        if(change == true){
-           value = (p.gamma + m[adjusted_index] + mu[adjusted_index]*p.gamma);
+           value = -1*(p.gamma + m[adjusted_index] + mu[adjusted_index]*p.gamma);
            gsl_matrix_set(FL,i,i,value);
            change = false;
        } 
        else{
-           value = (p.gamma + m[adjusted_index] + mu[adjusted_index])*(1-p.sigma_d1)*(p.gamma);
+           value = -1*(p.gamma + m[adjusted_index] + (1-p.sigma_d1)*mu[adjusted_index]*(p.gamma));
            gsl_matrix_set(FL,i,i,value);
            adjusted_index += 1;
            change = true;
@@ -154,7 +159,7 @@ float q_calc(double* S,double* I,double* R,double* V, double* N,double** M,doubl
     gsl_matrix *inv = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
     gsl_linalg_LU_invert(FL,inv_perm,inv);
     gsl_permutation_free(inv_perm);
-//    gsl_matrix_scale(inv,-1.0);
+    gsl_matrix_scale(inv,-1.0);
     gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,inv,G,0.0,K);
 
     
