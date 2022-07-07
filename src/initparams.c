@@ -233,6 +233,10 @@ int initialize_named_params(const char* filename,struct ParameterSet *p){
             value = atof(strtok(NULL, ","));
             p->AGES = value;
         }
+        if(counter == 29){
+            value = atof(strtok(NULL, ","));
+            p->IFR_mod = value;
+        }
         counter += 1;
     }
     fclose(stream);
@@ -259,9 +263,9 @@ double* assign_hospitalization(float ti_icu, float* ICU_ratio,int ages){
     return theta1;
 }
 
-char* generate_names(int vv_value, int stoch_number){
-    char* new_string =  (char*) malloc(100*sizeof(char));
-    sprintf(new_string,"age_run_%d_%d0.csv",stoch_number,vv_value);
+char* generate_names(int vv_value, int stoch_number, char* folder){
+    char* new_string =  (char*) malloc(3000*sizeof(char));
+    sprintf(new_string,"%s/age_run_%d_%d0.csv",folder,stoch_number,vv_value);
     return new_string;
 
 }

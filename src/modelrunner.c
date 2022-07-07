@@ -28,19 +28,21 @@ int main(int argc, char* argv[]){
     const char *vv_title =  "../params/vv_vals.csv";
     struct ParameterSet p;
     char* file_name = (char*)malloc(sizeof(char)*2000);
+    char* folder_type = (char*)malloc(sizeof(char)*2000);
     int run_number = atoi(argv[1]);
     int percent_number = atoi(argv[2]);
     int model_type = atoi(argv[3]);
     int vv_index = percent_number/10;
     file_name = argv[4];
+    folder_type = argv[5];
     initialize_named_params(file_name,&p);
     p.vv_values = initialize_unique_csv(11,vv_title,p.vv_values);
     time_t seconds;
 
     // initializes psi, the vaccine coverage variable 
-    // based on vaccinating more individuasl in the first 
+    // based on vaccinating more individuals in the first 
     // year than any other year 
-    //initialize gsl random environment
+    // initialize gsl random environment
     char* dynamic_title = (char*) malloc(sizeof(char)*100);
     char* new_file = (char*)malloc(sizeof(char)*90);
     //Vaccine configs, relates to all the different vaccine percentages
@@ -65,15 +67,12 @@ int main(int argc, char* argv[]){
 
     //Running each vaccine percentage for number given by sim_number
     for(int j = 0; j < run_number; j++){
-
-       new_file = generate_names(vax_percent,j+1);
-       // stoch_model takes in a vv_value, iteration number, file_name to write to, parameters, and 
+       new_file = generate_names(vax_percent,j+1,folder_type);
+      // stoch_model takes in a vv_value, iteration number, file_name to write to, parameters, and 
       // result format
-      //model_type 0 -> ages and all data
-      //model_type 1 -> ages and lessened data 
-      //model_type 2-> age-agnostic data
-      fprintf(stderr,"VV VALUE: %lf",p.vv_values[vv_index]);
-      fflush(stderr);
+      // model_type 0 -> ages and all data
+      // model_type 1 -> ages and lessened data 
+      // model_type 2-> age-agnostic data
        stoch_model(p.vv_values[vv_index],j+1,new_file,p,model_type,percent_number);
 	   free(new_file);
 	   new_file = (char*)malloc(sizeof(char)*90);

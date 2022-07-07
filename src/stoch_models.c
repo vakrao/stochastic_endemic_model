@@ -233,17 +233,9 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     int new_yearly_imports = 100;
 
     // Initilizaing large datasets
-    //const char *ifr_ile =  "../data/ifr.csv";
-    //const char *vax_ile =  "../data/dailyvax.csv";
-    //const char *m_ile =  "../data/new_mort.csv";
-    //const char *n_ile = "../data/us_pop.csv";
-    //const char *im_ile = "../data/immigration_prop.csv";
-    //const char *overall_ile = "../data/overall_contacts.csv";
-    //const char *icu_file = "../data/icu_ratio.csv";
-    //const char *school_file = "../data/school_contacts.csv";    
-    mu_i1 = initialize_unique_csv(p.AGES,ifr_file,mu_i1);
-    m = initialize_unique_csv(p.AGES,m_file,p.m);
-    N = initialize_unique_csv(p.AGES,n_file,N);
+//    mu_i1 = initialize_unique_csv(p.AGES,ifr_file,mu_i1);
+ //   m = initialize_unique_csv(p.AGES,m_file,p.m);
+ //   N = initialize_unique_csv(p.AGES,n_file,N);
     initialize_repeated_csv(p.AGES,vax_file,VC);
     initialize_repeated_csv(p.AGES,im_file,im_prop);
     initialize_repeated_csv(p.AGES,icu_file,ICU_raio);
@@ -253,10 +245,10 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     // Setting values for theta, mu, and m
     for(int i = 0; i < p.AGES; i++){
         theta[i] = 0;
-        mu_i1[i] = mu_i1[i] / 10.0;
+        p.mu[i] = (mu_i1[i] / 10.0)*p.IFR_mod;
         mu_i2[i] = mu_i1[i] * ifr_i2_scale;
-        m[i] = m[i] / 365.0;
-        m[i] = m[i] * 5.0;
+        p.m[i] = p.m[i] / 365.0;
+        p.m[i] = p.m[i] * 5.0;
     }
     // Age-based loop for setting all transition values to zero
     for(int c = 0; c < p.AGES; c++){
@@ -348,9 +340,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     double total_lambda = 0;
     int rand_number = 0;
     float largest_Xsi1 = 0;
-//    q1 = q_calc(S,I1,R1,V,N,M,mu_i1,m,q1,p);
-//    fprintf(stderr,"Q1 Value: %lf! \n",q1);
-//    fflush(stderr);
     //Time loop starts here
     while(t < p.ft){
 	// School contact matrix control flow
@@ -392,7 +381,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
            
 
             // Ageing Loop
-        if(t % 365 == 0  & t != 0){
+        if(((t-p.school_spring) % 365 == 0)  & t != 150 ){
             S = ageing(S, p.AGES);
             I1 = ageing(I1, p.AGES);
             R1= ageing(R1, p.AGES);
@@ -400,16 +389,14 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
                 V = ageing(V, p.AGES);
                 VR1= ageing(VR1, p.AGES);
                 VI1 = ageing(VI1, p.AGES);
-
             }
             if(t > p.variant_start){
                 I2 = ageing(I2, p.AGES);
                 H2= ageing(H2, p.AGES);
                 VR2= ageing(VR2, p.AGES);
                 VI2 = ageing(VI2, p.AGES);
-
             }
-            S[0] = 1;
+            S[0] = poisson_draw(r,total(N)*p.b,total(N)); 
             int gens = 0;
             vax_duration = p.perm_vax_seas_dur;
             // Importation logic
@@ -804,7 +791,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             XI2[i] = Xsi2[i] + Xr1i2[i];
             XD[i] = Di1[i] + Di2[i] + DVi1[i] + DVi2[i]; 
 
-
 //          Age-based data-saving
         if(setting == 0){
           fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,i,N[i],run_number);
@@ -833,25 +819,25 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
       }
 
-      if(setting == 2){
-//            Total Age Agnostic data-saving
-          fprintf(fptr,"%d,%.2f,%f,N\n",t,vv,total(N));
-          fprintf(fptr,"%d,%.2f,%f,S\n",t,vv,total(S));
-          fprintf(fptr,"%d,%.2f,%f,I1\n",t,vv,total(I1));
-          fprintf(fptr,"%d,%.2f,%f,I2\n",t,vv,total(I2));
-          fprintf(fptr,"%d,%.2f,%f,R1\n",t,vv,total(R1));
-          fprintf(fptr,"%d,%.2f,%f,R2\n",t,vv,total(R2));
-          fprintf(fptr,"%d,%.2f,%f,V\n",t,vv,total(V));
-          fprintf(fptr,"%d,%.2f,%f,XIVI1\n",t,vv,total(XIV1));
-          fprintf(fptr,"%d,%.2f,%f,XIV2\n",t,vv,total(XIV2));
-          fprintf(fptr,"%d,%.2f,%f,Xsi1\n",t,vv,total(Xsi1));
-          fprintf(fptr,"%d,%.2f,%f,Xsi2\n",t,vv,total(Xsi2));
-          fprintf(fptr,"%d,%.2f,%f,XD\n",t,vv,total(XD));
-          fprintf(fptr,"%d,%.2f,%f,VR1\n",t,vv,total(VR1));
-          fprintf(fptr,"%d,%.2f,%f,VR2\n",t,vv,total(VR2));
-          fprintf(fptr,"%d,%.2f,%f,H1\n",t,vv,total(H1));
-          fprintf(fptr,"%d,%.2f,%f,H2\n",t,vv,total(H2));
-      }
+//    if(setting == 2){
+    //        Total Age Agnostic data-saving
+      //    fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,90,total(N),run_number);
+      //    fprintf(fptr,"%d,%.2f,%d,%f,%d,S\n",t,vv,90,total(S),run_number);
+      //    fprintf(fptr,"%d,%.2f,%d,%f,%d,I1\n",t,vv,90,total(I1),run_number);
+      //    fprintf(fptr,"%d,%.2f,%d,%f,%d,I2\n",t,vv,90,total(I2),run_number);
+      //      fprintf(fptr,"%d,%.2f,%d,%f,%d,R1\n",t,vv,90,total(R1),run_number);
+      //    fprintf(fptr,"%d,%.2f,%d,%f,%d,R2\n",t,vv,90,total(R2),run_number);
+      //    fprintf(fptr,"%d,%.2f,%d,%f,%d,V\n",t,vv,90,total(V),run_number);
+      //    fprintf(fptr,"%d,%.2f,%d,%f,%d,XIVI1\n",t,vv,90,total(XIV1),run_number);
+      //    fprintf(fptr,"%d,%.2f,%d,%f,%d,XIV2\n",t,vv,90,total(XIV2),run_number);
+     //       fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi1\n",t,vv,90,total(Xsi1),run_number);
+      //    fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi2\n",t,vv,90,total(Xsi2),run_number);
+      //    fprintf(fptr,"%d,%.2f,%d,%f,%d,XD\n",t,vv,90,total(XD),run_number);
+      //    fprintf(fptr,"%d,%.2f,%d,%f,%d,VR1\n",t,vv,90,total(VR1),run_number);
+      //    fprintf(fptr,"%d,%.2f,%d,%f,%d,VR2\n",t,vv,90,total(VR2),run_number);
+      //    fprintf(fptr,"%d,%.2f,%d,%f,%d,H1\n",t,vv,90,total(H1),run_number);
+      //    fprintf(fptr,"%d,%.2f,%d,%f,%d,H2\n",t,vv,90,total(H2),run_number);
+      //}
        
         total_lambda = 0;
         // vv = dynamic_vv()
@@ -928,7 +914,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         }
         t += 1;
         float rt = rt_calc(S,I1,R1,V,N,M,mu_i1,m,q1,p);
-        // calcualte rt-value
+        fprintf(fptr,"%d,%.2f,%d,%f,%d,Rt\n",t,vv,-90,rt,run_number);
+        // calculate rt-value
         int rt_age = -1;
 //        vv = dynamic_vv(p.age_based_coverage,N,vax_duration,vax_percent);
     }
