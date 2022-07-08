@@ -20,7 +20,7 @@ int main(int argc, char* argv[]){
     pthread_t threads[NTHREADS];
     int thread_args[NTHREADS];
     int rc,i;
-    if(argc != 5){
+    if(argc != 6){
         printf("Missing parameters!");
         return 0;
     }
@@ -67,6 +67,8 @@ int main(int argc, char* argv[]){
 
     //Running each vaccine percentage for number given by sim_number
     for(int j = 0; j < run_number; j++){
+//        fprintf(stderr,"MU CALCULATION: %lf",p.mu[j]);
+//        fflush(stderr);
        new_file = generate_names(vax_percent,j+1,folder_type);
       // stoch_model takes in a vv_value, iteration number, file_name to write to, parameters, and 
       // result format

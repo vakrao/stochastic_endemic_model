@@ -82,7 +82,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     double** cm_school = (double**) malloc(p.AGES * sizeof(double*));
     double** cm_overall = (double**) malloc(p.AGES * sizeof(double*));
     double** M = (double**) malloc(p.AGES * sizeof(double*));
-    double *mu_i1 = (double*) malloc(p.AGES * sizeof(double));
+    double *mu =(double*) malloc(p.AGES * sizeof(double));
     double *mu_i2=(double*) malloc(p.AGES * sizeof(double));
     double* VC = (double*) malloc(p.AGES * sizeof(double));
     double* theta = (double*) malloc(p.AGES * sizeof(double));
@@ -233,9 +233,9 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     int new_yearly_imports = 100;
 
     // Initilizaing large datasets
-//    mu_i1 = initialize_unique_csv(p.AGES,ifr_file,mu_i1);
- //   m = initialize_unique_csv(p.AGES,m_file,p.m);
- //   N = initialize_unique_csv(p.AGES,n_file,N);
+    mu= initialize_unique_csv(p.AGES,ifr_file,mu);
+    m = initialize_unique_csv(p.AGES,m_file,m);
+    N = initialize_unique_csv(p.AGES,n_file,N);
     initialize_repeated_csv(p.AGES,vax_file,VC);
     initialize_repeated_csv(p.AGES,im_file,im_prop);
     initialize_repeated_csv(p.AGES,icu_file,ICU_raio);
@@ -245,10 +245,10 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     // Setting values for theta, mu, and m
     for(int i = 0; i < p.AGES; i++){
         theta[i] = 0;
-        p.mu[i] = (mu_i1[i] / 10.0)*p.IFR_mod;
-        mu_i2[i] = mu_i1[i] * ifr_i2_scale;
-        p.m[i] = p.m[i] / 365.0;
-        p.m[i] = p.m[i] * 5.0;
+        mu[i] = (mu[i] / 10.0)*p.IFR_mod;
+        mu_i2[i] = mu[i] * ifr_i2_scale;
+        m[i] = m[i] / 365.0;
+        m[i] = m[i] * 5.0;
     }
     // Age-based loop for setting all transition values to zero
     for(int c = 0; c < p.AGES; c++){
@@ -441,7 +441,9 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             	        I1[rand_number] += 1; 
             	    }
             	}
-                q1 = q_calc(S,I1,R1,V,N,M,mu_i1,m,p.R01,p);
+                q1 = q_calc(S,I1,R1,V,N,M,mu,m,p.R01,p);
+                fprintf(stderr,"Q calculation: %lf",q1);
+                fflush(stderr);
                 q2 = 0;
                 vax_duration = p.first_vax_seas_dur;
             }
@@ -524,7 +526,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
             if(I1[i] - Y1[i] - theta1[i] >= 1){
                 temp_transition = (I1[i] - Y1[i] - theta1[i]);
-                Di1[i] = poisson_draw(r,temp_transition*mu_i1[i]*p.gamma,temp_transition);
+                Di1[i] = poisson_draw(r,temp_transition*mu[i]*p.gamma,temp_transition);
             }
             else{
                 Di1[i] = 0;
@@ -585,7 +587,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
             if(VI1[i] - YV1[i] - theta3[i] >= 1){
                 temp_transition = (VI1[i] - YV1[i] - theta3[i] );
-                DVi1[i] = poisson_draw(r,temp_transition*(1-p.sigma_d1)*p.gamma*mu_i1[i],temp_transition);
+                DVi1[i] = poisson_draw(r,temp_transition*(1-p.sigma_d1)*p.gamma*mu[i],temp_transition);
             }
             else{
                 DVi1[i] = 0;
@@ -913,7 +915,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             IVR2[c] = 0;
         }
         t += 1;
-        float rt = rt_calc(S,I1,R1,V,N,M,mu_i1,m,q1,p);
+        float rt = rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
         fprintf(fptr,"%d,%.2f,%d,%f,%d,Rt\n",t,vv,-90,rt,run_number);
         // calculate rt-value
         int rt_age = -1;
@@ -922,7 +924,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     // now, we free all associated memory
     //free(p);
     free(m);
-    free(mu_i1);
     free(mu_i2);
     free(VC);
     free(theta);
