@@ -245,7 +245,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     // Setting values for theta, mu, and m
     for(int i = 0; i < p.AGES; i++){
         theta[i] = 0;
-        mu[i] = (mu[i] / 10.0)*p.IFR_mod;
+        mu[i] = (mu[i] / 1000.0)*p.IFR_mod;
         mu_i2[i] = mu[i] * ifr_i2_scale;
         m[i] = m[i] / 365.0;
         m[i] = m[i] * 5.0;
@@ -442,8 +442,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             	    }
             	}
                 q1 = q_calc(S,I1,R1,V,N,M,mu,m,p.R01,p);
-                fprintf(stderr,"Q calculation: %lf",q1);
-                fflush(stderr);
                 q2 = 0;
                 vax_duration = p.first_vax_seas_dur;
             }
@@ -920,6 +918,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         // calculate rt-value
         int rt_age = -1;
 //        vv = dynamic_vv(p.age_based_coverage,N,vax_duration,vax_percent);
+//    
     }
     // now, we free all associated memory
     //free(p);
