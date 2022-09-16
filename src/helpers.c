@@ -131,25 +131,23 @@ double dynamic_vv(double* ABR, double* N, int VR, int ideal_vax_coverage){
     float total_N = total(N);
     int counter = 1; 
     double vv_val= 0;
+    float test_vv = 1000;
+    double diff = 0.0;
     float test_WVC = 0;
     float vax_decimal = ideal_vax_coverage/100.0;
     for(int i =100; i < 13000; i++){
-        double test_vv = i / 1000;
+        test_vv = i/1000.0;
         for(int j = 0; j < AGES; j++){
             test_WVC += ABR[j]*N[j];
         }
         test_WVC = (test_WVC*test_vv*VR);
         test_WVC = test_WVC / total(N);
-            fprintf(stderr,"TEST WVC: %lf \n",test_WVC);
+        diff = test_WVC/test_vv;
+            fprintf(stderr,"VV: %lf\n, test_WVC: %lf, test_vv: %lf \n",diff,test_WVC,test_vv);
             fflush(stderr);
-        double diff = abs(vax_decimal - test_WVC);
-        fprintf(stderr,"TEST WVC: %lf, VAX DECIMAL: %lf \n",test_WVC,vax_decimal);
-        fflush(stderr);
-        if(diff < .0001){
+        if(diff > 0.95){
             vv_val = test_vv;
             counter += 1;
-            fprintf(stderr,"VV done %lf !\n",vv_val);
-            fflush(stderr);
             break;
         }
     }
