@@ -917,9 +917,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         fprintf(fptr,"%d,%.2f,%d,%f,%d,Rt\n",t,vv,-90,rt,run_number);
         // calculate rt-value
         int rt_age = -1;
-        fprintf(stderr,"starting vv: %d, %d \n",vax_percent,vax_duration);
-        fflush(stderr);
-        vv = dynamic_vv(p.age_based_coverage,N,vax_duration,vax_percent);
+//        vv = dynamic_vv(p.age_based_coverage,N,vax_duration,vax_percent);
 //    
     }
     // now, we free all associated memory

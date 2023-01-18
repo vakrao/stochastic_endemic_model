@@ -90,7 +90,12 @@ double find_lambda(double q,int age, double sigma, double* I, double* VI, double
 double* ageing(double* L, int a){
     double *new_L = (double*) malloc(AGES*sizeof(double));
     for(int i = 0; i < AGES; i++){
-        new_L[i] = L[i-1];
+        if(i == 84){
+            new_L[i] = L[i-1] + L[i];
+        }
+        else{
+            new_L[i] = L[i-1];
+        }
     }
     free(L);
     return new_L;
@@ -131,23 +136,25 @@ double dynamic_vv(double* ABR, double* N, int VR, int ideal_vax_coverage){
     float total_N = total(N);
     int counter = 1; 
     double vv_val= 0;
-    float test_vv = 1000;
-    double diff = 0.0;
     float test_WVC = 0;
     float vax_decimal = ideal_vax_coverage/100.0;
     for(int i =100; i < 13000; i++){
-        test_vv = i/1000.0;
+        double test_vv = i / 1000;
         for(int j = 0; j < AGES; j++){
             test_WVC += ABR[j]*N[j];
         }
         test_WVC = (test_WVC*test_vv*VR);
         test_WVC = test_WVC / total(N);
-        diff = test_WVC/test_vv;
-            fprintf(stderr,"VV: %lf\n, test_WVC: %lf, test_vv: %lf \n",diff,test_WVC,test_vv);
+            fprintf(stderr,"TEST WVC: %lf \n",test_WVC);
             fflush(stderr);
-        if(diff > 0.95){
+        double diff = abs(vax_decimal - test_WVC);
+        fprintf(stderr,"TEST WVC: %lf, VAX DECIMAL: %lf \n",test_WVC,vax_decimal);
+        fflush(stderr);
+        if(diff < .0001){
             vv_val = test_vv;
             counter += 1;
+            fprintf(stderr,"VV done %lf !\n",vv_val);
+            fflush(stderr);
             break;
         }
     }
