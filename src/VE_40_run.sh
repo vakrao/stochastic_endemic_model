@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J 20_endemic_run #job name                                      
+#SBATCH -J 50_ve_40 #job name                                      
 #SBATCH -p general #submit to the general partition
 #SBATCH --mail-type=ALL #send email for ALL, BEGIN, END, or FAIL
 #SBATCH --mail-user=shedmund@iu.edu #the email address for job-related emails
@@ -11,11 +11,11 @@
 #SBATCH --ntasks-per-node=1 #number of tasks per node
 #SBATCH --time=8:00:00 #requested time
 
-export RUNS=20
-export FOLDER="R0_5"
-export FOLDERDIR="R0"
+export RUNS=50
+export FOLDER="40"
+export FOLDERDIR="VE"
 export BIGFOLDER="/N/project/endemic_covid/data/raw/$FOLDERDIR/$FOLDER/raw/"
-export PARAMS="$FOLDER.csv"
+export PARAMS="VE_40.csv"
 
 #load modules
 module load gsl
@@ -45,26 +45,15 @@ srun model $RUNS 100 0 $PARAMS $BIGFOLDER
 rm *.o
 #Now, we move all files to the temp folder!
 echo '### Moving files to another folder !'
-cp $PARAMS /N/project/endemic_covid/data/raw/$FOLDERDIR/$FOLDER
-#mv age_run_*_*.csv /N/project/endemic_covid/data/raw/$FOLDERDIR/$FOLDER/raw
 
 cd /N/project/endemic_covid/data/raw/$FOLDERDIR/$FOLDER/raw
-echo '###### Creating large files! ######'
+
 for i in {0..10}; do cat age_run_*_"$i"0.csv > /N/project/endemic_covid/data/raw/$FOLDERDIR/$FOLDER/total/total_"$i"0.csv; done
+#mv age_run_*_*.csv /N/project/endemic_covid/data/raw/$FOLDERDIR/$FOLDER/raw
 
-#python3 seq_csv.py
-#mv total_vax_*.csv /N/project/endemic_covid/data/raw/$FOLDER/total
+cd /N/project/endemic_covid/scripts/
 
-#echo '###### Finished paste!######'
-#echo '###### Starting mean!######'
-#python3 age_mean.py
-#echo '###### Finished mean!######'
-#zip -9 exp1_quantile total_sim_vax_level_quantile_*.csv
+module load r
 
-#zip -9 exp1_mean total_sim_vax_level_mean_*.csv
-#zip -9 exp1_ages_mean total_sim_vax_ages_level_mean_*.csv
-#zip -9 exp1_ages_quantile total_sim_vax_ages_level_quantile_*.csv
-#echo '#### Finished zipping! ####'
-#python graph_lineplots.py
-echo '#### Finished plotting! ####'
-
+R CMD BATCH viz_script.R
+R CMD BATCH VE_40.R

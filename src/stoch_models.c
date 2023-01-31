@@ -236,6 +236,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     mu= initialize_unique_csv(p.AGES,ifr_file,mu);
     m = initialize_unique_csv(p.AGES,m_file,m);
     N = initialize_unique_csv(p.AGES,n_file,N);
+    p.N0 = calculate_N(N);
     initialize_repeated_csv(p.AGES,vax_file,VC);
     initialize_repeated_csv(p.AGES,im_file,im_prop);
     initialize_repeated_csv(p.AGES,icu_file,ICU_raio);

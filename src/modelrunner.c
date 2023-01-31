@@ -58,9 +58,14 @@ int main(int argc, char* argv[]){
     const char *overall_file = "../params/overall_contacts.csv";
     const char *icu_file = "../params/icu_ratio.csv";
     const char *school_file = "../params/school_contacts.csv";    
+    double *raw_N0 = (double*) malloc(sizeof(double)*p.AGES);
     p.m = (double*) malloc(p.AGES * sizeof(double));
     p.mu = (double*) malloc(p.AGES * sizeof(double));
     p.M = (double**) malloc(p.AGES * sizeof(double*));
+    raw_N0 = initialize_unique_csv(p.AGES,n_file,N);
+    for(i=0;i<p.AGES;i++){
+        p.N0 += raw_N0[i];
+    }
     initialize_unique_csv(p.AGES,m_file,p.m);
     initialize_unique_csv(p.AGES,ifr_file,p.mu);
     read_contact_matrices(p.AGES, overall_file,p.M);

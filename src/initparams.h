@@ -2,6 +2,7 @@
 #define INIT_PARAMS_H
 struct ParameterSet{
      int AGES;                                    
+     int N0;
      //reduction in infectiousness for multiple strains
      double sigma_q1;
      double sigma_q2;

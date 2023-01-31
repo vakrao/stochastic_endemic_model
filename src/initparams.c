@@ -21,6 +21,7 @@ Description: returns float-list based on the repeated csv format
     returns list of floats with parameter values
 */
 extern const int AGES;  
+extern const int N0;  
 extern const double b;  
 extern const double sigma; 
 extern const double sigma_h; 
