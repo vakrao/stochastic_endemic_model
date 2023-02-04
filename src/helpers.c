@@ -5,6 +5,7 @@
 #include<gsl/gsl_randist.h>  
 #include<gsl/gsl_rng.h>  
 #include "initparams.h"
+#include "helpers.h"
 
 //sigma = reduction of infectiousness
 double find_lambda(double q,int age, double sigma, double* I, double* VI, double** M, double* N,double* S){
@@ -88,10 +89,10 @@ double find_lambda(double q,int age, double sigma, double* I, double* VI, double
 //
 //} 
 
-double* ageing(double* L, struct ParameterSet p){
+double* ageing(double* L,struct ParameterSet p){
     double *new_L = (double*) malloc(AGES*sizeof(double));
-    L[0] = p.b*p.N;
-    for(int i = 1; i < AGES; i++){
+    L[0] = p.b*p.N0;
+    for(int i = 1; i < p.AGES; i++){
         if(i == 84){
             new_L[i] = L[i-1] + L[i];
         }

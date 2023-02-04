@@ -1,4 +1,5 @@
 #include "initparams.h"
+#include "helpers.h"
 #include "stoch_models.h"
 #include<stdlib.h>
 #include<omp.h>
@@ -62,7 +63,7 @@ int main(int argc, char* argv[]){
     p.m = (double*) malloc(p.AGES * sizeof(double));
     p.mu = (double*) malloc(p.AGES * sizeof(double));
     p.M = (double**) malloc(p.AGES * sizeof(double*));
-    raw_N0 = initialize_unique_csv(p.AGES,n_file,N);
+    raw_N0 = initialize_unique_csv(p.AGES,n_file,raw_N0);
     for(i=0;i<p.AGES;i++){
         p.N0 += raw_N0[i];
     }

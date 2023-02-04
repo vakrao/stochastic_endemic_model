@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include <time.h>
 #include <omp.h>
+#include "initparams.h"
 #include "helpers.h"
 #include "rt_funcs.h"
-#include "initparams.h"
 #include<gsl/gsl_randist.h>  
 #include<gsl/gsl_rng.h>  
 
@@ -78,6 +78,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     }
 
     int vax_duration = 0;
+    // ALL COMPARTMENTS
     double* m = (double*) malloc(p.AGES * sizeof(double));
     double** cm_school = (double**) malloc(p.AGES * sizeof(double*));
     double** cm_overall = (double**) malloc(p.AGES * sizeof(double*));
@@ -113,6 +114,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
 
 
+    // FILENAMES
     const char *ifr_file =  "../params/ifr.csv";
     const char *vax_file =  "../params/dailyvax.csv";
     const char *m_file =  "../params/new_mort.csv";
@@ -153,14 +155,13 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         }
     }
 
-    // Be specific abou names 
-    // Be super-general abou names...? Use 3-d array 
 
     float R02 = 0;
     int t = 0;
     float q1 = 0;
     float q2  = 0;
     const float q2_value = 0;
+    // ALL POTENTIAL COMPARTMENTS
 
     double Xr1[p.AGES];
     double Y1[p.AGES];
@@ -236,13 +237,13 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     mu= initialize_unique_csv(p.AGES,ifr_file,mu);
     m = initialize_unique_csv(p.AGES,m_file,m);
     N = initialize_unique_csv(p.AGES,n_file,N);
-    p.N0 = calculate_N(N);
     initialize_repeated_csv(p.AGES,vax_file,VC);
     initialize_repeated_csv(p.AGES,im_file,im_prop);
     initialize_repeated_csv(p.AGES,icu_file,ICU_raio);
     read_contact_matrices(p.AGES, overall_file,cm_overall);
     read_contact_matrices(p.AGES, school_file,cm_school);
     int counter = 0;
+    int N0 = 0;
     // Setting values for theta, mu, and m
     for(int i = 0; i < p.AGES; i++){
         theta[i] = 0;
@@ -250,7 +251,9 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         mu_i2[i] = mu[i] * ifr_i2_scale;
         m[i] = m[i] / 365.0;
         m[i] = m[i] * 5.0;
+        N0 += N[i];
     }
+    p.N0 = N0;
     // Age-based loop for setting all transition values to zero
     for(int c = 0; c < p.AGES; c++){
         M[c] = (double*) malloc(p.AGES*sizeof(double));
@@ -379,23 +382,21 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
                         }
                     }
                    q2 = 0;  
-           
-
             // Ageing Loop
         if(((t-p.school_spring) % 365 == 0)  & t != 150 ){
-            S = ageing(S, p.AGES);
-            I1 = ageing(I1, p.AGES);
-            R1= ageing(R1, p.AGES);
+            S = ageing(S, p);
+            I1 = ageing(I1, p);
+            R1= ageing(R1, p);
             if(t > p.vax_start){
-                V = ageing(V, p.AGES);
-                VR1= ageing(VR1, p.AGES);
-                VI1 = ageing(VI1, p.AGES);
+                V = ageing(V, p);
+                VR1= ageing(VR1, p);
+                VI1 = ageing(VI1, p);
             }
             if(t > p.variant_start){
-                I2 = ageing(I2, p.AGES);
-                H2= ageing(H2, p.AGES);
-                VR2= ageing(VR2, p.AGES);
-                VI2 = ageing(VI2, p.AGES);
+                I2 = ageing(I2, p);
+                H2= ageing(H2, p);
+                VR2= ageing(VR2, p);
+                VI2 = ageing(VI2, p);
             }
             S[0] = poisson_draw(r,total(N)*p.b,total(N)); 
             int gens = 0;
@@ -797,19 +798,19 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
           fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,i,N[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,S\n",t,vv,i,S[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,I1\n",t,vv,i,I1[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,I2\n",t,vv,i,I2[i],run_number);
+          //fprintf(fptr,"%d,%.2f,%d,%f,%d,I2\n",t,vv,i,I2[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,R1\n",t,vv,i,R1[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,R2\n",t,vv,i,R2[i],run_number);
+          //fprintf(fptr,"%d,%.2f,%d,%f,%d,R2\n",t,vv,i,R2[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,V\n",t,vv,i,V[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,XIVI1\n",t,vv,i,XIV1[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,XIV2\n",t,vv,i,XIV2[i],run_number);
+          //fprintf(fptr,"%d,%.2f,%d,%f,%d,XIVI1\n",t,vv,i,XIV1[i],run_number);
+          //fprintf(fptr,"%d,%.2f,%d,%f,%d,XIV2\n",t,vv,i,XIV2[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi1\n",t,vv,i,Xsi1[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi2\n",t,vv,i,Xsi2[i],run_number);
+          //fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi2\n",t,vv,i,Xsi2[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,XD\n",t,vv,i,XD[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,VR1\n",t,vv,i,VR1[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,VR2\n",t,vv,i,VR2[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,H1\n",t,vv,i,H1[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,H2\n",t,vv,i,H2[i],run_number);
+          //fprintf(fptr,"%d,%.2f,%d,%f,%d,VR1\n",t,vv,i,VR1[i],run_number);
+         // fprintf(fptr,"%d,%.2f,%d,%f,%d,VR2\n",t,vv,i,VR2[i],run_number);
+          //fprintf(fptr,"%d,%.2f,%d,%f,%d,H1\n",t,vv,i,H1[i],run_number);
+          //fprintf(fptr,"%d,%.2f,%d,%f,%d,H2\n",t,vv,i,H2[i],run_number);
         }
         // Storing less data for ages
         if(setting == 1){
