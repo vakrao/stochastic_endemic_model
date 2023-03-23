@@ -48,7 +48,7 @@ int main(int argc, char* argv[]){
     char* new_file = (char*)malloc(sizeof(char)*90);
     //Vaccine configs, relates to all the different vaccine percentages
     int vax_percent = percent_number / 10;
-    p.ft = p.years * 365;
+    p.ft = 10 * 365;
 
 
     const char *ifr_file =  "../params/ifr.csv";
@@ -73,15 +73,14 @@ int main(int argc, char* argv[]){
 
     //Running each vaccine percentage for number given by sim_number
     for(int j = 0; j < run_number; j++){
-//        fprintf(stderr,"MU CALCULATION: %lf",p.mu[j]);
-//        fflush(stderr);
        new_file = generate_names(vax_percent,j+1,folder_type);
       // stoch_model takes in a vv_value, iteration number, file_name to write to, parameters, and 
       // result format
       // model_type 0 -> ages and all data
       // model_type 1 -> ages and lessened data 
       // model_type 2-> age-agnostic data
-       stoch_model(p.vv_values[vv_index],j+1,new_file,p,model_type,percent_number);
+//       stoch_model(p.vv_values[vv_index],j+1,"mod_birth.csv",p,model_type,percent_number);
+    stoch_model(p.vv_values[vv_index],j+1,new_file,p,model_type,percent_number);
 	   free(new_file);
 	   new_file = (char*)malloc(sizeof(char)*90);
      } 

@@ -1,4 +1,4 @@
-﻿param,value
+param,value
 sigma_qi1,0.5
 sigma_qi2,0.5
 sigma_i1,0.5
@@ -11,7 +11,7 @@ chi_1,0.95
 chi_2,0.5
 C1,0.95
 C2,0.95
-years,2
+years,20
 zeta,0.125
 gamma,0.1587
 variant_start,-1
