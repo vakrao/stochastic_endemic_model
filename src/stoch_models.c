@@ -436,8 +436,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             	        I1[rand_number] += 1; 
             	    }
             	}
-//                q1 = q_calc(S,I1,R1,V,N,M,mu,m,p.R01,p);
-                q1 = 0;
+                q1 = q_calc(S,I1,R1,V,N,M,mu,m,p.R01,p);
+//                q1 = 0;
                 q2 = 0;
                 vax_duration = p.first_vax_seas_dur;
             }
