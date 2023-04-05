@@ -91,6 +91,7 @@ double find_lambda(double q,int age, double sigma, double* I, double* VI, double
 
 double* ageing(double* L,struct ParameterSet p){
     double *new_L = (double*) malloc(AGES*sizeof(double));
+    new_L[0] = 0;
     for(int i = 1; i < p.AGES; i++){
         if(i == 84){
             new_L[i] = L[i-1] + L[i];

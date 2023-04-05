@@ -48,7 +48,7 @@ int main(int argc, char* argv[]){
     char* new_file = (char*)malloc(sizeof(char)*90);
     //Vaccine configs, relates to all the different vaccine percentages
     int vax_percent = percent_number / 10;
-    p.ft = 10 * 365;
+    p.ft = 20 * 365;
 
 
     const char *ifr_file =  "../params/ifr.csv";
