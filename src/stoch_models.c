@@ -160,7 +160,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     }
 
 
-    float R02 = 0;
     int t = 0;
     float q1 = 0;
     float q2  = 0;
@@ -256,8 +255,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         m[i] = m[i];
     }
     p.N0 = NO;
-    fprintf(stderr,"ENTERING LOOP \n",t);
-    fflush(stderr);
     // Age-based loop for setting all transition values to zero
     for(int c = 0; c < p.AGES; c++){
         M[c] = (double*) malloc(p.AGES*sizeof(double));
@@ -377,8 +374,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
        // }
         // Ageing Loop
         if(((t % 365 == 0)  & t > 0)){
-            fprintf(stderr,"T: %d \n",t);
-            fflush(stderr);
             S = ageing(S, p);
             I1 = ageing(I1, p);
             R1= ageing(R1, p);
@@ -388,38 +383,21 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
                 VR1= ageing(VR1, p);
                 VI1 = ageing(VI1, p);
             }
-//            S[0] = poisson_draw(r,total(N)*p.b,total(N)); 
-//            S[0] = 10000;
             int gens = 0;
             vax_duration = p.perm_vax_seas_dur;
             // Importation logic
-            //if(t < p.variant_start){
-            //  for(int i = 0 ; i < new_yearly_imports; i++){
-            //    while(gens == 0){
-            //      rand_number = rand() % p.AGES;
-            //      if(S[rand_number] > 0){
-            //          S[rand_number] -= 1; 
-            //          I1[rand_number] += 1; 
-            //          gens = 1;
-            //      }
-            //    }
-            //  }
-            //}
-            //else{
-                 int generate = 0;
-              //   for(int i = 0 ; i < new_yearly_imports; i++){
-              //       while(generate == 0){
-              //           rand_number = rand() % p.AGES;
-
-              //           if(S[rand_number] > 0){
-              //               S[rand_number] -= 1; 
-              //               I1[rand_number] += 1; 
-              //               generate = 1;
-              //           }
-              //      }
-              //      generate = 0;
-              //   }
-            //}
+             int generate = 0;
+             for(int i = 0 ; i < new_yearly_imports; i++){
+                 while(generate == 0){
+                     rand_number = rand() % p.AGES;
+                     if(S[rand_number] > 0){
+                         S[rand_number] -= 1; 
+                         I1[rand_number] += 1; 
+                         generate = 1;
+                     }
+                }
+                generate = 0;
+             }
             // Cumulatively create N
             for(int k=0; k < p.AGES; k++){
                N[k] = S[k] + I1[k] + I2[k]+ VI1[k]+ VI2[k]+ V[k]+ R1[k]+ R2[k]+ H1[k]+ H2[k]+ VR1[k]+ VR2[k];
@@ -465,7 +443,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             VR1[i] = VR1[i] - VR1D[i];
             N[i]   = S[i] + I1[i] + R1[i] + VI1[i]  + VR1[i]  + V[i] ;
        }
-        // Stochasic Age-Transmission Loop
+      // Stochasic Age-Transmission Loop
         for(int i=0; i < p.AGES; i++){
 	      // Determining attack rate!
             double lambda1 = find_lambda(q1,i,p.sigma_q1,I1,VI1,M,N,S);
@@ -570,11 +548,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
            start = 1;
         }
 
-        fprintf(stderr,"VS[0]: %lf, omega1[0]: %lf, omega2[0]: %lf, IS[0]: %lf \n",Vs[0],omega1[0],omega2[0],IS[0]);
-        fflush(stderr);
-
-        fprintf(stderr,"R1[0] : %lf",R1[0]);
-        fflush(stderr);
         for(int i = 0; i < p.AGES; i++){
             S[i] = S[i] + Vs[i] + omega1[i] + omega2[i] + - Xsi1[i] - sv[i]  + IS[i];
             I1[i] = I1[i] + Xsi1[i] - Y1[i] - theta1[i] - Di1[i]  + II1[i];
@@ -617,8 +590,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         }
 
     }
-    //   fprintf(stderr,"t: %d,births: %lf IMMIGRANT NEWBORNES: %lf, SUS[0]: %lf, DEATHS: %lf \n",t,SB[0],IS[0],S[0],SD[0]);
-    //   fflush(stderr);
 
     float rt = rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
     
