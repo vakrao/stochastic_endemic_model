@@ -70,6 +70,8 @@ int main(int argc, char* argv[]){
     initialize_unique_csv(p.AGES,m_file,p.m);
     initialize_unique_csv(p.AGES,ifr_file,p.mu);
     read_contact_matrices(p.AGES, overall_file,p.M);
+    fprintf(stderr,"printing rt");
+    fflush(stderr);
 
     //Running each vaccine percentage for number given by sim_number
     for(int j = 0; j < run_number; j++){

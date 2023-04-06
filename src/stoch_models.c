@@ -119,12 +119,12 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     // FILENAMES
     const char *ifr_file =  "../params/ifr.csv";
     const char *vax_file =  "../params/dailyvax.csv";
-    const char *m_file =  "../params/daily_m.csv";
+    const char *m_file =  "../params/m.csv";
     const char *n_file = "../params/us_pop.csv";
     const char *im_file = "../params/immigration_prop.csv";
     const char *overall_file = "../params/overall_contacts.csv";
     const char *icu_file = "../params/icu_ratio.csv";
-    const char *school_file = "../params/school_contacts.csv";
+    const char *school_file = "../params/overall_contacts.csv";
     int psi_counter = 0;
     int perm_unvax_period = p.school_spring + p.school_break;
     int perm_vax_period = perm_unvax_period + p.perm_vax_seas_dur;
@@ -235,6 +235,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     double lambdaVals[p.AGES];
     double ifr_i2_scale = 1;
     int new_yearly_imports = 100;
+    fprintf(stderr,"INITIAILZING DATASETS \n");
+    fflush(stderr);
 
     // Initilizaing large datasets
     mu= initialize_unique_csv(p.AGES,ifr_file,mu);
@@ -348,22 +350,24 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     float largest_Xsi1 = 0;
     int start = 0;
     //Time loop starts here
+    fprintf(stderr,"LOOP VACCINE \n");
+    fflush(stderr);
     while(t < p.ft){
 	// School contact matrix control flow
-	    if(t % (p.school_spring) == 0 ){
-	        for(int i = 0; i < p.AGES; i++){
-	           for(int j = 0; j < p.AGES; j++){
-	    	       M[i][j] -= cm_school[i][j];
-	         	}
-	        }
-	    }
-	    if(t % (p.school_spring + p.school_break) == 0 ){
-	        for(int i = 0; i < p.AGES; i++){
-	           for(int j = 0; j < p.AGES; j++){
-                    M[i][j] += cm_school[i][j];
-		        }
-	        }
-	    }
+//	    if(t % (p.school_spring) == 0 ){
+//	        for(int i = 0; i < p.AGES; i++){
+//	           for(int j = 0; j < p.AGES; j++){
+//	    	       M[i][j] -= cm_school[i][j];
+//	         	}
+//	        }
+//	    }
+//	    if(t % (p.school_spring + p.school_break) == 0 ){
+//	        for(int i = 0; i < p.AGES; i++){
+//	           for(int j = 0; j < p.AGES; j++){
+//                    M[i][j] += cm_school[i][j];
+//		        }
+//	        }
+//	    }
         // introducing virus
        // for(int i = 0 ; i < new_yearly_imports; i++){
        //     rand_number = rand() % p.AGES;
@@ -443,6 +447,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             VR1[i] = VR1[i] - VR1D[i];
             N[i]   = S[i] + I1[i] + R1[i] + VI1[i]  + VR1[i]  + V[i] ;
        }
+    fprintf(stderr,"AGE TRANSMISSION \n");
+    fflush(stderr);
       // Stochasic Age-Transmission Loop
         for(int i=0; i < p.AGES; i++){
 	      // Determining attack rate!
@@ -591,7 +597,11 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
     }
 
-    float rt = rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
+    fprintf(stderr,"CALCULATING RT \n");
+    fflush(stderr);
+    float rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
+    fprintf(stderr,"printing rt");
+    fflush(stderr);
     
     
     fprintf(fptr,"%d,%.2f,%d,%f,%d,Rt\n",t,vv,-90,rt,run_number);
