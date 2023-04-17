@@ -402,7 +402,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             for(int k=0; k < p.AGES; k++){
                N[k] = S[k] + I1[k] + I2[k]+ VI1[k]+ VI2[k]+ V[k]+ R1[k]+ R2[k]+ H1[k]+ H2[k]+ VR1[k]+ VR2[k];
             }
-            float new_rt = rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
+            float new_rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
         }
         else{
             if(t  == 0){
@@ -414,7 +414,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             	        I1[rand_number] += 1; 
             	    }
             	}
-                q1 = q_calc(S,I1,R1,V,N,M,mu,m,p.R01,p);
+                q1 = mod_q_calc(S,I1,R1,V,N,M,mu,m,p.R01,p);
 //                q1 = 0;
                 q2 = 0;
                 vax_duration = p.first_vax_seas_dur;
@@ -591,7 +591,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
     }
 
-    float rt = rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
+    float rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
     
     
     fprintf(fptr,"%d,%.2f,%d,%f,%d,Rt\n",t,vv,-90,rt,run_number);
