@@ -45,8 +45,8 @@ float rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,doub
        }
     }
     // creating gain matrix!
-    for(int i = 0; i < p.AGES*2; i++){
-        for(int j = 0; j < p.AGES*2;j++){
+    for(int i = 1; i < p.AGES*2; i++){
+        for(int j = 1; j < p.AGES*2; j++){
             double A = M[row_counter][column_counter]*(S[row_counter]/N[column_counter]); 
             double B = M[row_counter][column_counter]*(S[row_counter]/N[column_counter])*p.sigma_d1; 
             //double A = 0.3;
@@ -128,32 +128,46 @@ float q_calc(double* S,double* I,double* R,double* V, double* N,double** M,doubl
        }
     }
     // creating gain matrix!
-    for(int i = 0; i < p.AGES*2; i++){
-        for(int j = 0; j < p.AGES*2;j++){
-            double A = M[row_counter][column_counter]*(N[row_counter]/N[column_counter]); 
-            double B = M[row_counter][column_counter]*(N[row_counter]/N[column_counter])*p.sigma_d1; 
-            double C = V[row_counter]*(1-p.sigma_i1)*(M[row_counter][column_counter]/N[column_counter]); 
-            double D = V[row_counter]*(1-p.sigma_i1)*p.sigma_q1*(M[row_counter][column_counter]/N[column_counter]); 
-             if((i % 2 == 0) && (j % 2 == 0)){
-                 gsl_matrix_set(G,i,j,A);
-             } 
-             if((i % 2 == 0) && (j % 2 == 1)){
-                 gsl_matrix_set(G,i,j,B);
-                 column_counter += 1;
-             } 
-             if((i % 2 == 1) && (j % 2 == 0)){
-                 gsl_matrix_set(G,i,j,C);
-             } 
-             if((i % 2 == 1) && (j % 2 == 1)){
-                 gsl_matrix_set(G,i,j,D);
-                 column_counter += 1;
-             } 
-        }
-        column_counter = 0;
-        if(i % 2 == 1){
-            row_counter += 1;
+    // create gain matrix! 
+    for(int i =0; i<p.AGES; i++){
+        for(int j = 0; j < p.AGES; j++){
+            double t11 = M[i][j]*S[i]/N[j];
+            double t12 = M[i][j]*(1-p.sigma_i1)*S[i]/N[j];
+            double t21 = M[i][j]*p.sigma_q1*V[i]/N[j];
+            double t22 = M[i][j]*(1-p.sigma_i1)*p.sigma_q1*V[i]/N[j];
+            gsl_matrix_set(G,i,j,t11);
+            gsl_matrix_set(G,i*2,j,t12);
+            gsl_matrix_set(G,i,j*2,t12);
+            gsl_matrix_set(G,i*2,j*2,t22);
+
         }
     }
+    //for(int i = 0; i < p.AGES*2; i++){
+    //    for(int j = 0; j < p.AGES*2;j++){
+    //        double A = M[row_counter][column_counter]*(N[row_counter]/N[column_counter]); 
+    //        double B = M[row_counter][column_counter]*(N[row_counter]/N[column_counter])*p.sigma_d1; 
+    //        double C = V[row_counter]*(1-p.sigma_i1)*(M[row_counter][column_counter]/N[column_counter]); 
+    //        double D = V[row_counter]*(1-p.sigma_i1)*p.sigma_q1*(M[row_counter][column_counter]/N[column_counter]); 
+    //         if((i % 2 == 0) && (j % 2 == 0)){
+    //             gsl_matrix_set(G,i,j,A);
+    //         } 
+    //         if((i % 2 == 0) && (j % 2 == 1)){
+    //             gsl_matrix_set(G,i,j,B);
+    //             column_counter += 1;
+    //         } 
+    //         if((i % 2 == 1) && (j % 2 == 0)){
+    //             gsl_matrix_set(G,i,j,C);
+    //         } 
+    //         if((i % 2 == 1) && (j % 2 == 1)){
+    //             gsl_matrix_set(G,i,j,D);
+    //             column_counter += 1;
+    //         } 
+    //    }
+    //    column_counter = 0;
+    //    if(i % 2 == 1){
+    //        row_counter += 1;
+    //    }
+    //}
     // take inverse now!
     gsl_linalg_LU_decomp(FL,inv_perm,&s);
     gsl_matrix *inv = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
@@ -168,7 +182,12 @@ float q_calc(double* S,double* I,double* R,double* V, double* N,double** M,doubl
     gsl_vector_set_zero(ev);
     gsl_eigen_symm(K, ev, w);
     gsl_eigen_symm_free(w);
-    float q = R0/gsl_vector_max(ev); 
+    fprintf(stderr,"R0: %d",R0);
+    fflush(stderr);
+    double val= 5.0;
+    float q = val/gsl_vector_max(ev); 
+    fprintf(stderr,"Q: %d",q);
+    fflush(stderr);
     return q;
 }
 float mod_rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,double* mu, double* m,double q1,struct ParameterSet p){
@@ -201,45 +220,27 @@ float mod_rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,
            change = true;
        }
     }
-    // creating gain matrix!
-
+    double totalM = 0;
     double totalN = 0;
-    for(int i = 0; i < p.AGES; i++){
-        totalN += N[i];
-    }
-    for(int i = 0; i < p.AGES*2; i++){
-
-       for(int k = 0; k < p.AGES;k++){
-           m_val = M[row_counter][k]; 
-       }
-
-        for(int j = 0; j < p.AGES*2;j++){
-            double A =M[row_counter][column_counter]*(S[row_counter]/N[row_counter]); 
-            double B = M[row_counter][column_counter]*(S[row_counter]/N[row_counter])*p.sigma_d1; 
-//            double B = 0;
-            double C = M[row_counter][column_counter]*(V[row_counter]/N[row_counter])*(1-p.sigma_i1); 
- //           double D = 0;
-            double D =M[row_counter][column_counter]*(V[row_counter]/N[row_counter])*p.sigma_q1*(1-p.sigma_i1); 
-             if((i % 2 == 0) && (j % 2 == 0)){
-                 gsl_matrix_set(G,i,j,A);
-             } 
-             if((i % 2 == 0) && (j % 2 == 1)){
-                 gsl_matrix_set(G,i,j,B);
-                 column_counter += 1;
-             } 
-             if((i % 2 == 1) && (j % 2 == 0)){
-                 gsl_matrix_set(G,i,j,C);
-             } 
-             if((i % 2 == 1) && (j % 2 == 1)){
-                 gsl_matrix_set(G,i,j,D);
-                 column_counter += 1;
-             } 
-        }
-        column_counter = 0;
-        if(i % 2 == 1){
-            row_counter += 1;
+    double val = 0;
+    for(int i =0; i < p.AGES; i++){
+        for(int j = 0; j < p.AGES; j++){
+         
+            double t11 = S[i]/N[j]*p.sigma_q1*M[i][j]; 
+            double t12 = S[i]/N[j]*M[i][j]*(p.sigma_q1);
+            double t21 = V[i]/N[j]*M[i][j]*(1-p.sigma_i1);
+            double t22 = V[i]/N[j]*M[i][j]*(1-p.sigma_i1)*(p.sigma_q1);
+//            if(i == 1){
+//                fprintf(stderr,"T11 VALUES: %f , T12 VALUES: %f\n",t11,t12);
+//                fflush(stderr);
+//            }
+            gsl_matrix_set(G,i,j,t11);
+            gsl_matrix_set(G,i,(j+85),t12);
+            gsl_matrix_set(G,i+85,j,t21);
+            gsl_matrix_set(G,(i+85),(j+85),t22);
         }
     }
+        
     // take inverse now!
     gsl_linalg_LU_decomp(FL,inv_perm,&s);
     gsl_matrix *inv = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
@@ -253,6 +254,8 @@ float mod_rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,
     gsl_vector *ev = gsl_vector_alloc(p.AGES*2);
     gsl_vector_set_zero(ev);
     gsl_eigen_symm(K, ev, w);
+//    fprintf(stderr,"LARGEST EIGEN VALUE: %lf \n",gsl_vector_max(ev));
+ //   fflush(stderr);
     double rt = gsl_vector_max(ev)*q1; 
     gsl_matrix_free(FL);
     gsl_matrix_free(G);

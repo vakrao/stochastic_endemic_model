@@ -52,8 +52,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     r = gsl_rng_alloc(gsl_rng_default);
     gsl_rng_set(r,value);
 
-    fprintf(stderr,"START \n");
-    fflush(stderr);
     for(int i = 0; i < p.AGES; i++){
 	    p.age_based_coverage[i] = 0; 
     }
@@ -128,8 +126,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     int psi_counter = 0;
     int perm_unvax_period = p.school_spring + p.school_break;
     int perm_vax_period = perm_unvax_period + p.perm_vax_seas_dur;
-    fprintf(stderr,"PERM VACCINE \n");
-    fflush(stderr);
     // vaccine seasonaity loop
     for(int i = 0; i < p.years; i++){
         for(int j = 0; j < 365; j++){
@@ -402,7 +398,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             for(int k=0; k < p.AGES; k++){
                N[k] = S[k] + I1[k] + I2[k]+ VI1[k]+ VI2[k]+ V[k]+ R1[k]+ R2[k]+ H1[k]+ H2[k]+ VR1[k]+ VR2[k];
             }
-            float new_rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
+//            float new_rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
         }
         else{
             if(t  == 0){
@@ -414,7 +410,9 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             	        I1[rand_number] += 1; 
             	    }
             	}
-                q1 = mod_q_calc(S,I1,R1,V,N,M,mu,m,p.R01,p);
+                fprintf(stderr,"Q VALUE! \n");
+                fflush(stderr);
+                q1 = q_calc(S,I1,R1,V,N,M,mu,m,p.R01,p);
 //                q1 = 0;
                 q2 = 0;
                 vax_duration = p.first_vax_seas_dur;
@@ -422,7 +420,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         }
        // births occur  
         float totalN = total(N);
-        if( t > 365){
+        if( t >= 365){
             SB[0] = poisson_draw(r,totalN*p.b,totalN);
             S[0] +=  SB[0];
         }
