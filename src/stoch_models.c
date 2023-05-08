@@ -126,6 +126,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     int psi_counter = 0;
     int perm_unvax_period = p.school_spring + p.school_break;
     int perm_vax_period = perm_unvax_period + p.perm_vax_seas_dur;
+           fprintf(fptr,"t,vv,age,value,sim_number,vartype\n");
     // vaccine seasonaity loop
     for(int i = 0; i < p.years; i++){
         for(int j = 0; j < 365; j++){
@@ -398,7 +399,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             for(int k=0; k < p.AGES; k++){
                N[k] = S[k] + I1[k] + I2[k]+ VI1[k]+ VI2[k]+ V[k]+ R1[k]+ R2[k]+ H1[k]+ H2[k]+ VR1[k]+ VR2[k];
             }
-//            float new_rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
         }
         else{
             if(t  == 0){
@@ -441,6 +441,9 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             VR1[i] = VR1[i] - VR1D[i];
             N[i]   = S[i] + I1[i] + R1[i] + VI1[i]  + VR1[i]  + V[i] ;
        }
+            float new_rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
+            fprintf(stderr,"RT VALUE: %lf \n",new_rt);
+            fflush(stderr);
       // Stochasic Age-Transmission Loop
         for(int i=0; i < p.AGES; i++){
 	      // Determining attack rate!
@@ -542,7 +545,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         }
 
        if(start == 0){
-           fprintf(fptr,"t,vv,age,value,sim_number,vartype\n");
            start = 1;
         }
 
