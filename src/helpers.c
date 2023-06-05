@@ -26,8 +26,8 @@ double find_lambda(double q,int age, double sigma, double* I, double* VI, double
          int start_age = (j*5);
          int end_age = start_age + 4;
          // calculating population and contacts for 5 age block
-         for(int k=start_age; k < end_age; k++){
-            contacts += (sigma*(VI[k]/N[k]) + (I[k]/N[k]));
+         for(int k=start_age; k <= end_age; k++){
+            contacts += (sigma*(VI[k]) + (I[k]));
             pop += N[k];
          }
          // multiply by shorteend contact matrix

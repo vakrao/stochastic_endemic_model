@@ -131,9 +131,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     int psi_counter = 0;
     int perm_unvax_period = p.school_spring + p.school_break;
     int perm_vax_period = perm_unvax_period + p.perm_vax_seas_dur;
-    fprintf(stderr,"string assignment \n");
-    fflush(stderr);
-           fprintf(fptr,"t,vv,age,value,sim_number,vartype\n");
+   fprintf(fptr,"t,vv,age,value,sim_number,vartype\n");
     // vaccine seasonaity loop
     fprintf(stderr,"season psi \n");
     fflush(stderr);
@@ -431,11 +429,9 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             	        I1[rand_number] += 1; 
             	    }
             	}
-    fprintf(stderr,"BEFORE Q\n");
-    fflush(stderr);
-//                q1 = q_calc(S,I1,R1,V,N,M,mu,m,p.R01,p);
-                q1 = 0.2;
-                q2 = 0;
+                q1 = q_calc(S,I1,R1,V,N,M,mu,m,p.R01,p);
+//                q1 = 0.2;
+//                q2 = 0;
                 vax_duration = p.first_vax_seas_dur;
             }
         }
@@ -446,8 +442,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             S[0] +=  SB[0];
         }
        // natural mortality 
-    fprintf(stderr,"AGEING DONE \n");
-    fflush(stderr);
        for(int i = 0; i < p.AGES; i++){
             SD[i] = poisson_draw(r,S[i]* m[i],S[i]);
             I1D[i] = poisson_draw(r,I1[i]*m[i],I1[i]);
@@ -464,16 +458,14 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             VR1[i] = VR1[i] - VR1D[i];
             N[i]   = S[i] + I1[i] + R1[i] + VI1[i]  + VR1[i]  + V[i];
        }
-//       float new_rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
-        float new_rt = 0;
+       float new_rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
+       fprintf(stderr,"RT VALUE: %lf",new_rt);
+    fflush(stderr);
+//        float new_rt = 0;
       // Stochasic Age-Transmission Loop
         for(int i=0; i < p.AGES; i++){
 	      // Determining attack rate!
-    fprintf(stderr,"CALC FOI \n");
-    fflush(stderr);
             double lambda1 = find_lambda(q1,i,p.sigma_q1,I1,VI1,M,N,S);
-    fprintf(stderr,"DONE FOI \n");
-    fflush(stderr);
             lambdaVals[i] = lambda1;
             total_lambda += lambda1;
             double lambda_mean = (S[i] * lambda1);
@@ -617,8 +609,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
     }
 
-//    float rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
-    float rt = 20.0;
+    float rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
+    //float rt = 20.0;
     
     
     fprintf(fptr,"%d,%.2f,%d,%f,%d,Rt\n",t,vv,-90,rt,run_number);

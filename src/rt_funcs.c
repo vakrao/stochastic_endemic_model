@@ -130,11 +130,19 @@ float q_calc(double* S,double* I,double* R,double* V, double* N,double** M,doubl
     // creating gain matrix!
     // create gain matrix! 
     for(int i =0; i<p.AGES; i++){
+        int z = i/5;
         for(int j = 0; j < p.AGES; j++){
-            double t11 = M[i][j]*S[i]/N[j];
-            double t12 = M[i][j]*(1-p.sigma_i1)*S[i]/N[j];
-            double t21 = M[i][j]*p.sigma_q1*V[i]/N[j];
-            double t22 = M[i][j]*(1-p.sigma_i1)*p.sigma_q1*V[i]/N[j];
+            int k = j/5;
+            double vi_contacts = 0;
+            double i_contacts = 0;
+            double pop = 0;
+            for(int r = k*5; r <= (5*k)+4; r++){
+                pop += N[r];
+            }
+            double t11 = M[z][k]*S[i]/pop;
+            double t12 = M[z][k]*(1-p.sigma_i1)*S[i]/pop;
+            double t21 = M[z][k]*p.sigma_q1*V[i]/pop;
+            double t22 = M[z][k]*(1-p.sigma_i1)*p.sigma_q1*V[i]/pop;
             gsl_matrix_set(G,i,j,t11);
             gsl_matrix_set(G,i*2,j,t12);
             gsl_matrix_set(G,i,j*2,t12);
@@ -184,8 +192,7 @@ float q_calc(double* S,double* I,double* R,double* V, double* N,double** M,doubl
     gsl_eigen_symm_free(w);
     fprintf(stderr,"R0: %d",R0);
     fflush(stderr);
-    double val= 5.0;
-    float q = val/gsl_vector_max(ev); 
+    float q = R0/gsl_vector_max(ev); 
     fprintf(stderr,"Q: %d",q);
     fflush(stderr);
     return q;
@@ -224,17 +231,34 @@ float mod_rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,
     double totalN = 0;
     double val = 0;
     for(int i =0; i < p.AGES; i++){
+        int z = i/5;
         for(int j = 0; j < p.AGES; j++){
-            for(int k =0; k < 17; k++){
-                double t11 = (S[i]/N[j])*M[i][j]; 
-                double t12 = (S[i]/N[j])*M[i][j]*(p.sigma_q1);
-                double t21 = (V[i]/N[j])*M[i][j]*(1-p.sigma_i1);
-                double t22 = (V[i]/N[j])*M[i][j]*(1-p.sigma_i1)*(p.sigma_q1);
-                gsl_matrix_set(G,i,j,t11);
-                gsl_matrix_set(G,i,(j+85),t12);
-                gsl_matrix_set(G,i+85,j,t21);
-                gsl_matrix_set(G,(i+85),(j+85),t22);
+            int k = j/5;
+            double vi_contacts = 0;
+            double i_contacts = 0;
+            double pop = 0;
+            for(int r = k*5; r <= (5*k)+4; r++){
+                pop += N[r];
             }
+            double t11 = M[z][k]*S[i]/pop;
+            double t12 = M[z][k]*(1-p.sigma_i1)*S[i]/pop;
+            double t21 = M[z][k]*p.sigma_q1*V[i]/pop;
+            double t22 = M[z][k]*(1-p.sigma_i1)*p.sigma_q1*V[i]/pop;
+            gsl_matrix_set(G,i,j,t11);
+            gsl_matrix_set(G,i,j+85,t12);
+            gsl_matrix_set(G,i+85,j,t12);
+            gsl_matrix_set(G,i+85,j+85,t22);
+
+            //for(int k =0; k < 17; k++){
+            //    double t11 = (S[i]/N[j])*M[i][j]; 
+            //    double t12 = (S[i]/N[j])*M[i][j]*(p.sigma_q1);
+            //    double t21 = (V[i]/N[j])*M[i][j]*(1-p.sigma_i1);
+            //    double t22 = (V[i]/N[j])*M[i][j]*(1-p.sigma_i1)*(p.sigma_q1);
+            //    gsl_matrix_set(G,i,j,t11);
+            //    gsl_matrix_set(G,i,(j+85),t12);
+            //    gsl_matrix_set(G,i+85,j,t21);
+            //    gsl_matrix_set(G,(i+85),(j+85),t22);
+            //}
         }
     }
         
