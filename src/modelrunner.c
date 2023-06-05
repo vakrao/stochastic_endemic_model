@@ -56,20 +56,25 @@ int main(int argc, char* argv[]){
     const char *m_file =  "../params/new_mort.csv";
     const char *n_file = "../params/us_pop.csv";
     const char *im_file = "../params/immigration_prop.csv";
-    const char *overall_file = "../params/overall_contacts.csv";
+    const char *overall_file = "../params/overall_17_contacts.csv";
     const char *icu_file = "../params/icu_ratio.csv";
-    const char *school_file = "../params/school_contacts.csv";    
+    const char *school_file = "../params/school_17_contacts.csv";    
     double *raw_N0 = (double*) malloc(sizeof(double)*p.AGES);
     p.m = (double*) malloc(p.AGES * sizeof(double));
     p.mu = (double*) malloc(p.AGES * sizeof(double));
-    p.M = (double**) malloc(p.AGES * sizeof(double*));
+    p.M = (double**) malloc(17 * sizeof(double*));
+    fprintf(stderr,"starting reading \n");
+    fflush(stderr);
     raw_N0 = initialize_unique_csv(p.AGES,n_file,raw_N0);
     for(i=0;i<p.AGES;i++){
         p.N0 += raw_N0[i];
     }
     initialize_unique_csv(p.AGES,m_file,p.m);
     initialize_unique_csv(p.AGES,ifr_file,p.mu);
-    read_contact_matrices(p.AGES, overall_file,p.M);
+    read_contact_matrices(17, overall_file,p.M);
+    fprintf(stderr,"finished reading \n");
+    fflush(stderr);
+    raw_N0 = initialize_unique_csv(p.AGES,n_file,raw_N0);
 
     //Running each vaccine percentage for number given by sim_number
     for(int j = 0; j < run_number; j++){

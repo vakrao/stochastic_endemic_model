@@ -224,15 +224,17 @@ float mod_rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,
     double totalN = 0;
     double val = 0;
     for(int i =0; i < p.AGES; i++){
-        for(int j = 1; j < p.AGES; j++){
-            double t11 = (S[i]/N[j])*M[i][j]; 
-            double t12 = (S[i]/N[j])*M[i][j]*(p.sigma_q1);
-            double t21 = (V[i]/N[j])*M[i][j]*(1-p.sigma_i1);
-            double t22 = (V[i]/N[j])*M[i][j]*(1-p.sigma_i1)*(p.sigma_q1);
-            gsl_matrix_set(G,i,j,t11);
-            gsl_matrix_set(G,i,(j+85),t12);
-            gsl_matrix_set(G,i+85,j,t21);
-            gsl_matrix_set(G,(i+85),(j+85),t22);
+        for(int j = 0; j < p.AGES; j++){
+            for(int k =0; k < 17; k++){
+                double t11 = (S[i]/N[j])*M[i][j]; 
+                double t12 = (S[i]/N[j])*M[i][j]*(p.sigma_q1);
+                double t21 = (V[i]/N[j])*M[i][j]*(1-p.sigma_i1);
+                double t22 = (V[i]/N[j])*M[i][j]*(1-p.sigma_i1)*(p.sigma_q1);
+                gsl_matrix_set(G,i,j,t11);
+                gsl_matrix_set(G,i,(j+85),t12);
+                gsl_matrix_set(G,i+85,j,t21);
+                gsl_matrix_set(G,(i+85),(j+85),t22);
+            }
         }
     }
         

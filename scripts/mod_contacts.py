@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
 import csv
-fname = "../data/overall_contacts.csv"
+
+fname = "../params/overall_contacts.csv"
+#fname = "../params/school_contacts.csv"
 
 full_conts = np.loadtxt(fname,delimiter=",",dtype=float)
 
@@ -25,22 +27,28 @@ for i in range(0,new_bins):
         new_M[i][j] = np.sum(full_conts[sr:er,sc:ec])
 
 
-for i in range(0,old_bins):
-    M.insert(i,[])
-    for j in range(0,old_bins):
-        M[i].append(0)
-
-for i in range(0,old_bins):
-    for j in range(0,old_bins):
-        r = int(i/new_bins)
-        c = int(j/new_bins)
-        M[i][j] = new_M[r][c]
-
+#for i in range(0,old_bins):
+#    M.insert(i,[])
+#    for j in range(0,old_bins):
+#        M[i].append(0)
+#
+#for i in range(0,old_bins):
+#    for j in range(0,old_bins):
+#        r = int(i/new_bins)
+#        c = int(j/new_bins)
+#        M[i][j] = new_M[r][c]
+#
 
         
-with open('overall_17_contacts.csv','w',newline='') as csvfile:
-    writer = csv.writer(csvfile)
-    writer.writerows(new_M)
+if fname == "../params/overall_contacts.csv":
+    with open('overall_17_contacts.csv','w',newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(new_M)
+if fname == "../params/school_contacts.csv":
+    with open('school_17_contacts.csv','w',newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(new_M)
+
 
 
 
