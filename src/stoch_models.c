@@ -459,8 +459,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             N[i]   = S[i] + I1[i] + R1[i] + VI1[i]  + VR1[i]  + V[i];
        }
        float new_rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
-       fprintf(stderr,"RT VALUE: %lf",new_rt);
-    fflush(stderr);
+       fprintf(stderr,"RT VALUE: %lf, Q-value: %lf",new_rt,q1);
+        fflush(stderr);
 //        float new_rt = 0;
       // Stochasic Age-Transmission Loop
         for(int i=0; i < p.AGES; i++){
@@ -470,6 +470,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             total_lambda += lambda1;
             double lambda_mean = (S[i] * lambda1);
             Xsi1[i] =  poisson_draw(r,lambda_mean,S[i]);
+//            fprintf(stderr,"new infections: %lf",Xsi1[i]);
+//            fflush(stderr);
             // S -> V compartment exit logic
             if(S[i] - Xsi1[i] >= 1){
                 temp_transition = (S[i] - Xsi1[i]);
@@ -567,7 +569,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         }
 
         for(int i = 0; i < p.AGES; i++){
-            S[i] = S[i] + Vs[i] + omega1[i] + omega2[i] + - Xsi1[i] - sv[i]  + IS[i];
+            S[i] = S[i] + Vs[i] + omega1[i] + omega2[i]  - Xsi1[i] - sv[i]  + IS[i];
             I1[i] = I1[i] + Xsi1[i] - Y1[i] - theta1[i] - Di1[i]  + II1[i];
             R1[i]  = R1[i] + Y1[i] + Yh1r1[i] - r1v[i] - omega1[i] + IR1[i];
             VI1[i] = VI1[i] + Xvvi1[i] - theta3[i] - YV1[i] - DVi1[i] + IVI1[i];

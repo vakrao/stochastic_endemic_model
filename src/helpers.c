@@ -31,7 +31,7 @@ double find_lambda(double q,int age, double sigma, double* I, double* VI, double
             pop += N[k];
          }
          // multiply by shorteend contact matrix
-         row_sum = M[z][j]*(contacts/pop);
+         row_sum += M[z][j]*(contacts/pop);
      }
      foi = row_sum*q;
     
