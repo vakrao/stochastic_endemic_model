@@ -13,25 +13,19 @@ double find_lambda(double q,int age, double sigma, double* I, double* VI, double
     double contacts = 0;
     double pop = 0;
     double foi = 0;
-   //         fprintf(stderr,"VI at 0: %lf \n",VI[0]);
-   //         fflush(stderr);
-//     for(int i = 0; i < AGES; i++){
-//         infec_contact += (M[age][i]*(I[i]/N[i]));
-//     }
-//     for(int i = 0; i < AGES; i++){
-//         breakthrough_contact += (M[age][i]*(VI[i]/N[i]));
-//     }
-     int z  = age/5;
-     for(int j = 0; j < 17; j++){
-         int start_age = (j*5);
-         int end_age = start_age + 4;
-         // calculating population and contacts for 5 age block
-         for(int k=start_age; k <= end_age; k++){
-            contacts += (sigma*(VI[k]) + (I[k]));
-            pop += N[k];
-         }
-         // multiply by shorteend contact matrix
-         row_sum += M[z][j]*(contacts/pop);
+    int z  = age/5;
+    for(int j = 0; j < 17; j++){
+        int start_age = (j*5);
+        int end_age = start_age + 4;
+        // calculating population and contacts for 5 age block
+        for(int k=start_age; k <= end_age; k++){
+           contacts += ((sigma*VI[k]) + (I[k]));
+           pop += N[k];
+        }
+        // multiply by shorteend contact matrix
+        row_sum += M[z][j]*(contacts/pop);
+        contacts = 0; 
+        pop = 0;
      }
      foi = row_sum*q;
     

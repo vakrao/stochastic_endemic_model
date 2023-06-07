@@ -205,11 +205,11 @@ float mod_rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,
         int z = i/5;
         for(int j = 0; j < p.AGES; j++){
             int k = j/5;
-            double vi_contacts = 0;
-            double i_contacts = 0;
             double pop = 0;
+            double sus = 0;
             for(int r = k*5; r <= (5*k)+4; r++){
                 pop += N[r];
+                
             }
             double t11 = M[z][k]*S[i]/pop;
             double t12 = M[z][k]*(1-p.sigma_i1)*S[i]/pop;
@@ -219,17 +219,6 @@ float mod_rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,
             gsl_matrix_set(G,i,j+85,t12);
             gsl_matrix_set(G,i+85,j,t12);
             gsl_matrix_set(G,i+85,j+85,t22);
-
-            //for(int k =0; k < 17; k++){
-            //    double t11 = (S[i]/N[j])*M[i][j]; 
-            //    double t12 = (S[i]/N[j])*M[i][j]*(p.sigma_q1);
-            //    double t21 = (V[i]/N[j])*M[i][j]*(1-p.sigma_i1);
-            //    double t22 = (V[i]/N[j])*M[i][j]*(1-p.sigma_i1)*(p.sigma_q1);
-            //    gsl_matrix_set(G,i,j,t11);
-            //    gsl_matrix_set(G,i,(j+85),t12);
-            //    gsl_matrix_set(G,i+85,j,t21);
-            //    gsl_matrix_set(G,(i+85),(j+85),t22);
-            //}
         }
     }
         

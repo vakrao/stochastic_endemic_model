@@ -238,6 +238,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     double IVR2[p.AGES];
     double temp_transition = 0;
     double muIFR = 0;
+    double lambda = 0;
     double lambdaVals[p.AGES];
     double ifr_i2_scale = 1;
     int new_yearly_imports = 100;
@@ -363,8 +364,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     fflush(stderr);
     //Time loop starts here
     while(t < p.ft){
-    fprintf(stderr,"%d \n",t);
-    fflush(stderr);
 	// School contact matrix control flow
 	    if(t % (p.school_spring) == 0 ){
 	        for(int i = 0; i < contact_compartments; i++){
@@ -381,13 +380,13 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 	        }
 	    }
         // introducing virus
-       // for(int i = 0 ; i < new_yearly_imports; i++){
-       //     rand_number = rand() % p.AGES;
-       //     if(S[rand_number] > 0){
-       //            S[rand_number] = S[rand_number] - 1; 
-       //            I1[rand_number] = I1[rand_number] + 1; 
-       //         }
-       // }
+//        for(int i = 0 ; i < new_yearly_imports; i++){
+//            rand_number = rand() % p.AGES;
+//            if(S[rand_number] > 0){
+//                   S[rand_number] = S[rand_number] - 1; 
+//                   I1[rand_number] = I1[rand_number] + 1; 
+//                }
+//        }
         // Ageing Loop
         if(((t % 365 == 0)  & t > 0)){
             S = ageing(S, p);
@@ -431,7 +430,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             	}
                 q1 = q_calc(S,I1,R1,V,N,M,mu,m,p.R01,p);
 //                q1 = 0.2;
-//                q2 = 0;
                 vax_duration = p.first_vax_seas_dur;
             }
         }
@@ -456,22 +454,16 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             V[i] = V[i] - VD[i];
             VI1[i] = VI1[i] - VI1D[i];
             VR1[i] = VR1[i] - VR1D[i];
-            N[i]   = S[i] + I1[i] + R1[i] + VI1[i]  + VR1[i]  + V[i];
+            N[i] = S[i] + I1[i] + R1[i] + VI1[i]  + VR1[i]  + V[i];
        }
-       float new_rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
-       fprintf(stderr,"RT VALUE: %lf, Q-value: %lf",new_rt,q1);
-        fflush(stderr);
-//        float new_rt = 0;
       // Stochasic Age-Transmission Loop
         for(int i=0; i < p.AGES; i++){
 	      // Determining attack rate!
-            double lambda1 = find_lambda(q1,i,p.sigma_q1,I1,VI1,M,N,S);
-            lambdaVals[i] = lambda1;
-            total_lambda += lambda1;
-            double lambda_mean = (S[i] * lambda1);
+            lambda = find_lambda(q1,i,p.sigma_q1,I1,VI1,M,N,S);
+            lambdaVals[i] = lambda;
+            total_lambda += lambda;
+            double lambda_mean = (S[i] * lambda);
             Xsi1[i] =  poisson_draw(r,lambda_mean,S[i]);
-//            fprintf(stderr,"new infections: %lf",Xsi1[i]);
-//            fflush(stderr);
             // S -> V compartment exit logic
             if(S[i] - Xsi1[i] >= 1){
                 temp_transition = (S[i] - Xsi1[i]);
@@ -484,7 +476,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             Vs[i] = poisson_draw(r,V[i]*(1/p.time_of_immunity),V[i]);
             if(V[i] - Vs[i] >= 1){
                 temp_transition = V[i] - Vs[i];
-                Xvvi1[i] = poisson_draw(r,temp_transition * lambda1 * (1-p.sigma_i1),temp_transition);
+                Xvvi1[i] = poisson_draw(r,temp_transition * lambda * (1-p.sigma_i1),temp_transition);
             }
             else{
                 Xvvi1[i] = 0;
@@ -597,10 +589,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
           //fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi2\n",t,vv,i,Xsi2[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,D\n",t,vv,i,D[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,lambda\n",t,vv,i,lambdaVals[i],run_number);
-          //fprintf(fptr,"%d,%.2f,%d,%f,%d,VR1\n",t,vv,i,VR1[i],run_number);
-         // fprintf(fptr,"%d,%.2f,%d,%f,%d,VR2\n",t,vv,i,VR2[i],run_number);
-          //fprintf(fptr,"%d,%.2f,%d,%f,%d,H1\n",t,vv,i,H1[i],run_number);
-          //fprintf(fptr,"%d,%.2f,%d,%f,%d,H2\n",t,vv,i,H2[i],run_number);
         }
         // Storing less data for ages
         if(setting == 1){
@@ -706,9 +694,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         }
         t += 1;
         // calculate rt-value
-        int rt_age = -1;
 //        vv = dynamic_vv(p.age_based_coverage,N,vax_duration,vax_percent);
-//    
     }
     // now, we free all associated memory
     //free(p);
