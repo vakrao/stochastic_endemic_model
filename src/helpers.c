@@ -10,18 +10,27 @@
 //sigma = reduction of infectiousness
 double find_lambda(double q,int age, double sigma, double* I, double* VI, double** M, double* N,double* S){
     double row_sum = 0;
-    double infec_contact = 0; 
-    double breakthrough_contact = 0;
-   //         fprintf(stderr,"VI at 0: %lf \n",VI[0]);
-   //         fflush(stderr);
-     for(int i = 0; i < AGES; i++){
-         infec_contact += (M[age][i]*(I[i]/N[i]));
+    double contacts = 0;
+    double pop = 0;
+    double foi = 0;
+    int z  = age/5;
+    for(int j = 0; j < 17; j++){
+        int start_age = (j*5);
+        int end_age = start_age + 4;
+        double ratio = 0;
+        pop = 0;
+        contacts = 0;
+        // calculating population and contacts for 5 age block
+        for(int k=start_age; k <= end_age; k++){
+           contacts += ((sigma*VI[k]) + (I[k]));
+           pop += N[k];
+        }
+        ratio = contacts/pop;
+        // multiply by shorteend contact matrix
+        row_sum += M[z][j]*(ratio);
      }
-     for(int i = 0; i < AGES; i++){
-         breakthrough_contact += (M[age][i]*(VI[i]/N[i]));
-     }
-     row_sum = q*(infec_contact + sigma*breakthrough_contact);
-    return row_sum;
+     foi = row_sum*q;
+    return foi;
 }
 
 
