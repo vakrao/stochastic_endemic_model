@@ -10,9 +10,9 @@
 #include<gsl/gsl_randist.h>  
 #include<gsl/gsl_rng.h>  
 
-// Creae funcion ha akes int .csv file and creaes
+// Create funcion ha akes int .csv file and creaes
 // intpus
-// Name hese ex files: simulaion
+// Name these ex files: simulaion
 // Each simulaion will have a ceraint # of runs 
 // Each simulaion will have .csv files associaed 
 // vv is used o deerminte he vaccintaion level
@@ -270,11 +270,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     }
     // Age-based loop for setting all transition values to zero
     for(int c = 0; c < p.AGES; c++){
-//        M[c] = (double*) malloc(p.AGES*sizeof(double));
         S[c] = N[c];
-//        for(int j = 0; j < p.AGES; j++){
-//            M[c][j] = cm_overall[c][j];
-//        }
         I1[c] = 0;
         lambdaVals[c] = 0;
         VI1[c] = 0; 
@@ -432,7 +428,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 //                q1 = 0.2;
                 vax_duration = p.first_vax_seas_dur;
             }
-        }
+       }
        // births occur  
         float totalN = total(N);
         if( t >= 365){
@@ -601,6 +597,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
     float rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
     //float rt = 20.0;
+    fprintf(stderr,"RT: %lf \n ",rt);
+    fflush(stderr);
     
     
     fprintf(fptr,"%d,%.2f,%d,%f,%d,Rt\n",t,vv,-90,rt,run_number);

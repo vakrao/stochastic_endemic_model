@@ -2,9 +2,8 @@ import numpy as np
 import pandas as pd
 import csv
 
-fname = "../params/overall_contacts.csv"
-#fname = "../params/school_contacts.csv"
-
+#fname = "../params/overall_contacts.csv"
+fname = "../params/school_contacts.csv"
 full_conts = np.loadtxt(fname,delimiter=",",dtype=float)
 
 new_bins = 17
@@ -19,13 +18,14 @@ for i in range(0,new_bins):
         new_M[i].append(0)
 
 for i in range(0,new_bins):
-    sr = i*increment
+    sr = (i)*increment
     er = sr + increment
     for j in range(0,new_bins):
-        sc = j*increment
+        sc = (j)*increment
         ec = sc + increment
+        print(sr,er,sc,ec)
         new_M[i][j] = np.sum(full_conts[sr:er,sc:ec])
-
+        print(np.sum(full_conts[sr:er,sc:ec]))
 
 #for i in range(0,old_bins):
 #    M.insert(i,[])
@@ -38,14 +38,13 @@ for i in range(0,new_bins):
 #        c = int(j/new_bins)
 #        M[i][j] = new_M[r][c]
 #
-
         
 if fname == "../params/overall_contacts.csv":
-    with open('overall_17_contacts.csv','w',newline='') as csvfile:
+    with open('../params/overall_17_contacts.csv','w',newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(new_M)
 if fname == "../params/school_contacts.csv":
-    with open('school_17_contacts.csv','w',newline='') as csvfile:
+    with open('../params/school_17_contacts.csv','w',newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(new_M)
 

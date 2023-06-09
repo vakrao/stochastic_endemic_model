@@ -17,18 +17,19 @@ double find_lambda(double q,int age, double sigma, double* I, double* VI, double
     for(int j = 0; j < 17; j++){
         int start_age = (j*5);
         int end_age = start_age + 4;
+        double ratio = 0;
+        pop = 0;
+        contacts = 0;
         // calculating population and contacts for 5 age block
         for(int k=start_age; k <= end_age; k++){
            contacts += ((sigma*VI[k]) + (I[k]));
            pop += N[k];
         }
+        ratio = contacts/pop;
         // multiply by shorteend contact matrix
-        row_sum += M[z][j]*(contacts/pop);
-        contacts = 0; 
-        pop = 0;
+        row_sum += M[z][j]*(ratio);
      }
      foi = row_sum*q;
-    
     return foi;
 }
 
