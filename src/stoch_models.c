@@ -10,13 +10,6 @@
 #include<gsl/gsl_randist.h>  
 #include<gsl/gsl_rng.h>  
 
-// Create funcion ha akes int .csv file and creaes
-// intpus
-// Name these ex files: simulaion
-// Each simulaion will have a ceraint # of runs 
-// Each simulaion will have .csv files associaed 
-// vv is used o deerminte he vaccintaion level
-// run number is used o name he files
 // Need to add dynamic vax changing
 
 
@@ -50,33 +43,13 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     gsl_rng_env_setup();
     T = gsl_rng_default;
     r = gsl_rng_alloc(gsl_rng_default);
+    p.age_based_coverage= initialize_unique_csv(p.AGES,age_file,p.age_based_coverage);
     gsl_rng_set(r,value);
 
     for(int i = 0; i < p.AGES; i++){
 	    p.age_based_coverage[i] = 0; 
     }
-    fprintf(stderr,"starting to read vax \n");
-    fflush(stderr);
     //assigning vaccine percentages based on age
-    for(int i = 0; i < p.AGES; i++){
-        if ( i <= 5 & i > 0 ){
-            p.age_based_coverage[i] = 0;
-        }
-        if ( i <= 12 & i > 5 ){
-            p.age_based_coverage[i] = (.646*vv)/365.0;
-        }
-        if ( i <= 17 & i > 12 ){
-            p.age_based_coverage[i] = (.553*vv)/365.0;
-        }
-        if ( i <= 49 & i > 17 ){
-            p.age_based_coverage[i] = (.384*vv)/365.0;
-        }
-        if ( i <= 64 & i > 49 ){
-            p.age_based_coverage[i] = (.506*vv)/365.0;
-        }
-        if ( i <= 85  & i > 64 ){
-            p.age_based_coverage[i] = (.698*vv)/365.0;
-        }
     }
 
     int contact_compartments = 17;
@@ -121,6 +94,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     fflush(stderr);
     // FILENAMES
     const char *ifr_file =  "../params/ifr.csv";
+    const char *age_file =  "../params/age_coverage.csv";
     const char *vax_file =  "../params/dailyvax.csv";
     const char *m_file =  "../params/daily_m.csv";
     const char *n_file = "../params/us_pop.csv";
@@ -260,7 +234,10 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         mu[i] = (mu[i] / 100.0)*p.IFR_mod;
         NO += N[i];
         m[i] = m[i];
+        year_val = (p.age_based_coverage[i]*vv)/365.0;
+        p.age_based_coverage[i] = year_val;
     }
+
     p.N0 = NO;
     for(int k = 0; k < contact_compartments; k++){
         M[k] = (double*) malloc(p.AGES*sizeof(double));
