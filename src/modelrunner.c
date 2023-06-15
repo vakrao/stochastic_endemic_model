@@ -29,16 +29,24 @@ int main(int argc, char* argv[]){
     const char *vv_title =  "../params/vv_vals.csv";
     struct ParameterSet p;
     char* file_name = (char*)malloc(sizeof(char)*2000);
-    char* folder_type = (char*)malloc(sizeof(char)*2000);
+    char* folder_string = (char*)malloc(sizeof(char)*2000);
+    char* model_type = (char*)malloc(sizeof(char)*2000);
     int run_number = atoi(argv[1]);
     int percent_number = atoi(argv[2]);
     int model_type = atoi(argv[3]);
+    int folder_tyep = 0;
     int vv_index = percent_number/10;
     file_name = argv[4];
-    folder_type = argv[5];
+    folder_string = argv[5];
     initialize_named_params(file_name,&p);
     p.vv_values = initialize_unique_csv(11,vv_title,p.vv_values);
     time_t seconds;
+    if (folder_string == "age"){
+        folder_type = 0;
+    }
+    if (folder_string == "totals"){
+        folder_type = 2;
+    }
 
     // initializes psi, the vaccine coverage variable 
     // based on vaccinating more individuals in the first 
@@ -48,7 +56,7 @@ int main(int argc, char* argv[]){
     char* new_file = (char*)malloc(sizeof(char)*90);
     //Vaccine configs, relates to all the different vaccine percentages
     int vax_percent = percent_number / 10;
-    p.ft = p.years*365+10;
+    p.ft = p.years*365;
 
 
     const char *ifr_file =  "../params/ifr.csv";
@@ -63,8 +71,6 @@ int main(int argc, char* argv[]){
     p.m = (double*) malloc(p.AGES * sizeof(double));
     p.mu = (double*) malloc(p.AGES * sizeof(double));
     p.M = (double**) malloc(17 * sizeof(double*));
-    fprintf(stderr,"starting reading \n");
-    fflush(stderr);
     raw_N0 = initialize_unique_csv(p.AGES,n_file,raw_N0);
     for(i=0;i<p.AGES;i++){
         p.N0 += raw_N0[i];
@@ -72,8 +78,6 @@ int main(int argc, char* argv[]){
     initialize_unique_csv(p.AGES,m_file,p.m);
     initialize_unique_csv(p.AGES,ifr_file,p.mu);
     read_contact_matrices(17, overall_file,p.M);
-    fprintf(stderr,"finished reading \n");
-    fflush(stderr);
     raw_N0 = initialize_unique_csv(p.AGES,n_file,raw_N0);
 
     //Running each vaccine percentage for number given by sim_number
@@ -85,7 +89,7 @@ int main(int argc, char* argv[]){
       // model_type 1 -> ages and lessened data 
       // model_type 2-> age-agnostic data
 //       stoch_model(p.vv_values[vv_index],j+1,"mod_birth.csv",p,model_type,percent_number);
-    stoch_model(p.vv_values[vv_index],j+1,new_file,p,model_type,percent_number);
+       stoch_model(p.vv_values[vv_index],j+1,new_file,p,model_type,percent_number);
 	   free(new_file);
 	   new_file = (char*)malloc(sizeof(char)*90);
      } 

@@ -15,7 +15,9 @@ export RUNS=50
 export FOLDER="100_days"
 export FOLDERDIR="imm_dur"
 export BIGFOLDER="/N/project/endemic_covid/data/raw/$FOLDERDIR/$FOLDER/raw/"
-export PARAMS="$FOLDER.csv"
+export INPUT_PARAMS="/N/project/endemic_covid/experiments/specs/100_days.csv"
+export OUTPUT_FOLDER="/N/project/endemic_covid/data/VD/100/specs/"
+export TYPE="age"
 
 #load modules
 module load gsl
@@ -26,25 +28,26 @@ module load python
 #cd full/path/to/your/directory
 
 #Now, we compile all C files and create the object file...
-gcc -c *.c 
-echo '#### Compiling model! ####' 
-gcc -o model *.o -lgsl -lgslcblas -lm 
+#gcc -c *.c 
+#echo '#### Compiling model! ####' 
+#gcc -o model *.o -lgsl -lgslcblas -lm 
 echo '#### Running model! ####' 
 #Running model for different vaccine configs, 50 runs
-srun model $RUNS 00 0 $PARAMS $BIGFOLDER 
-srun model $RUNS 10 0 $PARAMS $BIGFOLDER 
-srun model $RUNS 20 0 $PARAMS $BIGFOLDER 
-srun model $RUNS 30 0 $PARAMS $BIGFOLDER 
-srun model $RUNS 40 0 $PARAMS $BIGFOLDER  
-srun model $RUNS 50 0 $PARAMS $BIGFOLDER 
-srun model $RUNS 60 0 $PARAMS $BIGFOLDER 
-srun model $RUNS 70 0 $PARAMS $BIGFOLDER 
-srun model $RUNS 80 0 $PARAMS $BIGFOLDER 
-srun model $RUNS 90 0 $PARAMS $BIGFOLDER  
-srun model $RUNS 100 0 $PARAMS $BIGFOLDER   
+srun model $RUNS 00 $AGE $PARAMS $BIGFOLDER 
+srun model $RUNS 10 $AGE $PARAMS $BIGFOLDER 
+srun model $RUNS 20 $AGE $PARAMS $BIGFOLDER 
+srun model $RUNS 30 $AGE $PARAMS $BIGFOLDER 
+srun model $RUNS 40 $AGE $PARAMS $BIGFOLDER  
+srun model $RUNS 50 $AGE $PARAMS $BIGFOLDER 
+srun model $RUNS 60 $AGE $PARAMS $BIGFOLDER 
+srun model $RUNS 70 $AGE $PARAMS $BIGFOLDER 
+srun model $RUNS 80 $AGE $PARAMS $BIGFOLDER 
+srun model $RUNS 90 $AGE $PARAMS $BIGFOLDER  
+srun model $RUNS 100 $AGE $PARAMS $BIGFOLDER   
 rm *.o
 #Now, we move all files to the temp folder!
 echo '### Moving files to another folder !'
+cp $INPUT_PARAMS $OUTPUT_FOLDER
 
 cd /N/project/endemic_covid/data/raw/$FOLDERDIR/$FOLDER/raw
 

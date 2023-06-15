@@ -43,14 +43,12 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     gsl_rng_env_setup();
     T = gsl_rng_default;
     r = gsl_rng_alloc(gsl_rng_default);
-    p.age_based_coverage= initialize_unique_csv(p.AGES,age_file,p.age_based_coverage);
     gsl_rng_set(r,value);
 
     for(int i = 0; i < p.AGES; i++){
 	    p.age_based_coverage[i] = 0; 
     }
     //assigning vaccine percentages based on age
-    }
 
     int contact_compartments = 17;
     int vax_duration = 0;
@@ -105,10 +103,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     int psi_counter = 0;
     int perm_unvax_period = p.school_spring + p.school_break;
     int perm_vax_period = perm_unvax_period + p.perm_vax_seas_dur;
-   fprintf(fptr,"t,vv,age,value,sim_number,vartype\n");
+    fprintf(fptr,"t,vv,age,value,sim_number,vartype\n");
     // vaccine seasonaity loop
-    fprintf(stderr,"season psi \n");
-    fflush(stderr);
     for(int i = 0; i < p.years; i++){
         for(int j = 0; j < 365; j++){
             if( i == 0){
@@ -138,8 +134,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     }
 
 
-    fprintf(stderr,"read psi \n");
-    fflush(stderr);
     int t = 0;
     float q1 = 0;
     float q2  = 0;
@@ -228,6 +222,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     read_contact_matrices(contact_compartments, school_file,cm_school);
     int counter = 0;
     int NO = 0;
+    double year_val = 0;
     // Setting values for theta, mu, and m
     for(int i = 0; i < p.AGES; i++){
         theta[i] = 0;
@@ -239,6 +234,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     }
 
     p.N0 = NO;
+    // initializing contact matrix
     for(int k = 0; k < contact_compartments; k++){
         M[k] = (double*) malloc(p.AGES*sizeof(double));
         for(int j = 0; j < contact_compartments; j++){
@@ -333,8 +329,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     int rand_number = 0;
     float largest_Xsi1 = 0;
     int start = 0;
-    fprintf(stderr,"starting time \n");
-    fflush(stderr);
     //Time loop starts here
     while(t < p.ft){
 	// School contact matrix control flow
