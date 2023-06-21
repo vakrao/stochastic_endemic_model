@@ -527,7 +527,20 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
            start = 1;
         }
 
+        float incidence = 0;
+        float protection = 0; 
+        float population =0;
+        float average_infection_age = 0;
+        int age_category= 10;
+        int old_age = 10;
+        bool record = false;
+        float total_infec = 0; 
+        float all_infec = 0;
+        float average_age = 0;
+        float age_pop = 0;
+        float total_age = 0;
         for(int i = 0; i < p.AGES; i++){
+            
             S[i] = S[i] + Vs[i] + omega1[i] + omega2[i]  - Xsi1[i] - sv[i]  + IS[i];
             I1[i] = I1[i] + Xsi1[i] - Y1[i] - theta1[i] - Di1[i]  + II1[i];
             R1[i]  = R1[i] + Y1[i] + Yh1r1[i] - r1v[i] - omega1[i] + IR1[i];
@@ -540,6 +553,63 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             XIV1[i] = Xvvi1[i] ;
             XI1[i] = Xsi1[i] ; 
             XD[i] = Di1[i] + DVi1[i] ; 
+            all_infec += i*I[i];
+            total_infec += I[i];
+            age_pop += i*N[i];
+            total_pop += N[i];
+            // 6 differnet age-categories 
+            // (0-4),(5-12),(13-17),(18-49),(50-64),(65+) 
+            // 0    , 1    , 2     , 3     , 4     , 5 -> age indices
+            float XV = r1v[i] + sv[i];
+            if(i <= 4){
+                age_category = 0;
+            } 
+            if(i >= 5 && i <= 12){
+                if(age_category == 0){
+                    incidence = 0;
+                    population = 0; 
+                    protection = 0;
+                }
+                age_category = 1;
+            }
+            if(i >= 13 && i <= 17){
+                if(age_category == 1){
+                    incidence = 0;
+                    population = 0; 
+                    protection = 0;
+                }
+                age_category = 2;
+            }
+            if(i >= 18 && i <= 49){
+                if(age_category == 2){
+                    incidence = 0;
+                    population = 0; 
+                    protection = 0;
+                }
+                age_category = 3;
+            }
+            if(i >= 50 && i <= 64){
+                if(age_category == 3){
+                    incidence = 0;
+                    population = 0; 
+                    protection = 0;
+                }
+                age_category = 4;
+            }
+            if(i >= 65){
+                if(age_category == 4){
+                    incidence = 0;
+                    population = 0; 
+                    protection = 0;
+                }
+                age_category = 5;
+            }
+            incidence += Xsi[i];
+            protection += r1v[i] + sv[i];
+            population += N[i];
+            if(i == 4 || i == 12 || i == 17 || i == 49 || i == 64 || i == 84){
+                record = true; 
+            }
 
 //          Age-based data-saving
         if(setting == 0){
@@ -563,16 +633,24 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
           fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi1\n",t,vv,i,Xsi1[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,XD\n",t,vv,i,XD[i],run_number);
         }
+        // Storing data based on age category
+        if(setting == 3 && record == true){
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,age_category,population,run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi1\n",t,vv,age_category,incidence,run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,XV\n",t,vv,age_category,protection,run_number);
+          record = false;
+        }
 
     }
 
+    float average_infecage = all_age/total(I);
+    float average_age = total_pop/total(N);
     float rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
     //float rt = 20.0;
-    fprintf(stderr,"RT: %lf \n ",rt);
-    fflush(stderr);
-    
-    
     fprintf(fptr,"%d,%.2f,%d,%f,%d,Rt\n",t,vv,-90,rt,run_number);
+    fprintf(fptr,"%d,%.2f,%d,%f,%d,AverageInfecAge\n",t,vv,-90,average_infecage,run_number);
+    fprintf(fptr,"%d,%.2f,%d,%f,%d,AverageAge\n",t,vv,-90,average_age,run_number);
+  
     if(setting == 2){
             //Total Age Agnostic data-saving
           fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,90,total(N),run_number);
@@ -586,84 +664,85 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
           fprintf(fptr,"%d,%.2f,%d,%f,%d,D\n",t,vv,90,total(D),run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,VR1\n",t,vv,90,total(VR1),run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,V\n",t,vv,90,total(V),run_number);
-      }
-      
-        total_lambda = 0;
-        // vv = dynamic_vv()
-        //zero out all transitions
-        for(int c = 0; c < p.AGES; c++){
-	        XD[c] = 0; 
-            Xsi1[c] = 0;
-            Xsi2[c] = 0;
-            Xr1[c] = 0;
-            Y1[c] = 0;
-            Y2[c] = 0;
-            YV1[c] = 0;
-            YV2[c] = 0;
-            omega1[c] = 0;
-            omega2[c] = 0;
-            omega3[c] = 0;
-            omega4[c] = 0;
-            theta1[c] = 0;
-            theta2[c] = 0;
-            theta3[c] = 0;
-            theta4[c] = 0;
-            sv[c] = 0;
-            Xsh1[c] = 0;
-            Xsh2[c] = 0;
-            Xr1i2[c] = 0;
-            Xr2i1[c] = 0;
-            Xvvi1[c] = 0;
-            Xvvi2[c] = 0;
-            Yh1r1[c] = 0;
-            Yh2r2[c] = 0;
-            Xvr1vi2[c] = 0;
-            Xvr2vi1[c] = 0;
-            Di1[c] = 0;
-            DVi1[c] = 0;
-            DVi2[c] = 0;
-            Di2[c] = 0;
-            Dh1[c] = 0;
-            Dh2[c] = 0;
-            Vh1[c] = 0;
-            Vh2[c] = 0;
-            Vr1[c] = 0;
-            Vs[c] = 0;
-            vh1vr1[c] = 0;
-            vh2vr2[c] = 0;
-            p_vs[c] = 0;
-            r1v[c] = 0;
-            r2v[c] = 0;
-            IS[c] = 0;
-            II1[c] = 0;
-            IVI1[c] = 0;
-            IR1[c] = 0;
-            IH1[c] = 0;
-            IV[c] = 0;
-            II2[c] = 0; 
-            IVI2[c] = 0;
-            IR2[c] = 0;
-            SD[c] = 0;
-            SB[c] = 0;
-            I1D[c] = 0;
-            I2D[c] = 0;
-            VI1D[c] = 0;
-            VI2D[c] = 0;
-            R2D[c] = 0;
-            R1D[c] = 0;
-            VR2D[c] = 0;
-            VR1D[c] = 0;
-            VD[c] = 0;
-            H2D[c] = 0;
-            H1D[c] = 0;
-            IH2[c] = 0;
-            D[c] = 0;
-            IVR1[c] = 0;
-            IVR2[c] = 0;
-        }
-        t += 1;
-        // calculate rt-value
-//        vv = dynamic_vv(p.age_based_coverage,N,vax_duration,vax_percent);
+    }
+    
+    
+     total_lambda = 0;
+     // vv = dynamic_vv()
+     //zero out all transitions
+     for(int c = 0; c < p.AGES; c++){
+	     XD[c] = 0; 
+         Xsi1[c] = 0;
+         Xsi2[c] = 0;
+         Xr1[c] = 0;
+         Y1[c] = 0;
+         Y2[c] = 0;
+         YV1[c] = 0;
+         YV2[c] = 0;
+         omega1[c] = 0;
+         omega2[c] = 0;
+         omega3[c] = 0;
+         omega4[c] = 0;
+         theta1[c] = 0;
+         theta2[c] = 0;
+         theta3[c] = 0;
+         theta4[c] = 0;
+         sv[c] = 0;
+         Xsh1[c] = 0;
+         Xsh2[c] = 0;
+         Xr1i2[c] = 0;
+         Xr2i1[c] = 0;
+         Xvvi1[c] = 0;
+         Xvvi2[c] = 0;
+         Yh1r1[c] = 0;
+         Yh2r2[c] = 0;
+         Xvr1vi2[c] = 0;
+         Xvr2vi1[c] = 0;
+         Di1[c] = 0;
+         DVi1[c] = 0;
+         DVi2[c] = 0;
+         Di2[c] = 0;
+         Dh1[c] = 0;
+         Dh2[c] = 0;
+         Vh1[c] = 0;
+         Vh2[c] = 0;
+         Vr1[c] = 0;
+         Vs[c] = 0;
+         vh1vr1[c] = 0;
+         vh2vr2[c] = 0;
+         p_vs[c] = 0;
+         r1v[c] = 0;
+         r2v[c] = 0;
+         IS[c] = 0;
+         II1[c] = 0;
+         IVI1[c] = 0;
+         IR1[c] = 0;
+         IH1[c] = 0;
+         IV[c] = 0;
+         II2[c] = 0; 
+         IVI2[c] = 0;
+         IR2[c] = 0;
+         SD[c] = 0;
+         SB[c] = 0;
+         I1D[c] = 0;
+         I2D[c] = 0;
+         VI1D[c] = 0;
+         VI2D[c] = 0;
+         R2D[c] = 0;
+         R1D[c] = 0;
+         VR2D[c] = 0;
+         VR1D[c] = 0;
+         VD[c] = 0;
+         H2D[c] = 0;
+         H1D[c] = 0;
+         IH2[c] = 0;
+         D[c] = 0;
+         IVR1[c] = 0;
+         IVR2[c] = 0;
+     }
+     t += 1;
+     // calculate rt-value
+     vv = dynamic_vv(p.age_based_coverage,N,vax_duration,vax_percent);
     }
     // now, we free all associated memory
     //free(p);
