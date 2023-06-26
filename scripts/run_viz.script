@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#SBATCH -J viz_run
+#SBATCH -p general 
+#SBATCH -o filename_%j.txt 
+#SBATCH --mail-user=vakrao@iu.edu 
+#SBATCH --mail-type=ALL 
+#SBATCH --error=%j.err
+#SBATCH --nodes=1 
+#SBATCH --mem=120G
+#SBATCH --ntasks-per-node=1 
+#SBATCH --time=12:00:00 
+#SBATCH -A general
+
+
+module load r
+
+R CMD BATCH viz_script.R
+#R CMD BATCH R0_3.R
+R CMD BATCH R0_5.R
+#R CMD BATCH R0_7.R
+#R CMD BATCH R0_9.R
+
+#R CMD BATCH 100_days.R
+#R CMD BATCH 150_days.R
+
+#R CMD BATCH VE_30.R
+#R CMD BATCH VE_40.R

@@ -6,11 +6,11 @@ library(spatstat)
 library(vroom)
 library(purrr)
 
-setwd("/N/project/endemic_covid/data/MU/MU_100/total/")
+setwd("/N/project/endemic_covid/data/raw/R0/R0_9/total/")
 
 vax_list <- list.files(pattern=".csv")
 
-title = "Model dynamics for waning=100 days"
+title = "Model dynamics for R0=9"
 
 stoch_map_1 <- map_dfr(vax_list, time_series)
 
@@ -19,7 +19,7 @@ saveRDS(stoch_map_1, "cum_age_map.RDS")
 #time series====
 time_plot <- time_series_graph_func(title)
 
-ggsave("/N/project/endemic_covid/data/MU/MU_100/viz/time_series_100_days.png", 
+ggsave("/N/project/endemic_covid/data/raw/R0/R0_9/viz/time_series_R0_9.png", 
        type="cairo", 
        height=7,
        width=10,
@@ -30,7 +30,7 @@ ggsave("/N/project/endemic_covid/data/MU/MU_100/viz/time_series_100_days.png",
 
 rt_plot <- rt_plot_func(title)
 
-ggsave("/N/project/endemic_covid/data/MU/MU_100/viz/rt_100_days.png", 
+ggsave("/N/project/endemic_covid/data/raw/R0/R0_9/viz/rt_R0_9.png", 
        type="cairo", 
        height=7,
        width=9,
@@ -45,7 +45,7 @@ saveRDS(age_map, "strat_age_map.RDS")
 
 age_inf_map <- age_inf_plot_func(title)
 
-ggsave("/N/project/endemic_covid/data/MU/MU_100/viz/age_diff_100_days.png", 
+ggsave("/N/project/endemic_covid/data/raw/R0/R0_9/viz/age_diff_R0_9.png", 
        type="cairo", 
        height=7,
        width=10,
@@ -55,7 +55,7 @@ ggsave("/N/project/endemic_covid/data/MU/MU_100/viz/age_diff_100_days.png",
 #death heat map====
 heat1 <- heat_death_func(title)
 
-ggsave("/N/project/endemic_covid/data/raw/imm_dur/100_days/viz/heat_maps_deaths_100_days.png", 
+ggsave("/N/project/endemic_covid/data/raw/R0/R0_9/viz/heat_maps_deaths_R0_9.png", 
        type="cairo", 
        height=8,
        width=10,
@@ -65,9 +65,10 @@ ggsave("/N/project/endemic_covid/data/raw/imm_dur/100_days/viz/heat_maps_deaths_
 #infection heat map====
 heat2 <- heat_inf_func(title)
 
-ggsave("/N/project/endemic_covid/data/raw/imm_dur/100_days/viz/heat_maps_infections_100_days.png", 
+ggsave("/N/project/endemic_covid/data/raw/R0/R0_9/viz/heat_maps_infections_R0_9.png", 
        type="cairo", 
        height=8,
        width=10,
        units = "in",
        plot=heat2)
+
