@@ -30,25 +30,25 @@ int main(int argc, char* argv[]){
     struct ParameterSet p;
     char* file_name = (char*)malloc(sizeof(char)*2000);
     char* folder_string = (char*)malloc(sizeof(char)*2000);
-    char* model_type = (char*)malloc(sizeof(char)*2000);
+    char* folder_type = (char*)malloc(sizeof(char)*2000);
     int run_number = atoi(argv[1]);
     int percent_number = atoi(argv[2]);
-    int model_type = atoi(argv[3]);
-    int folder_tyep = 0;
     int vv_index = percent_number/10;
+    int model_type = 10;
+    folder_type = argv[3];
     file_name = argv[4];
     folder_string = argv[5];
     initialize_named_params(file_name,&p);
     p.vv_values = initialize_unique_csv(11,vv_title,p.vv_values);
     time_t seconds;
-    if (folder_string == "age"){
-        folder_type = 0;
+    if (folder_type== "age"){
+        model_type = 0;
     }
-    if (folder_string == "totals"){
-        folder_type = 2;
+    if (folder_type== "totals"){
+       model_type = 2;
     }
-    if (folder_string == "category"){
-        folder_type = 3;
+    if (folder_type== "category"){
+        model_type = 3;
     }
 
     // initializes psi, the vaccine coverage variable 
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]){
 
     //Running each vaccine percentage for number given by sim_number
     for(int j = 0; j < run_number; j++){
-       new_file = generate_names(vax_percent,j+1,folder_type);
+       new_file = generate_names(vax_percent,j+1,folder_string);
       // stoch_model takes in a vv_value, iteration number, file_name to write to, parameters, and 
       // result format
       // model_type 0 -> ages and all data

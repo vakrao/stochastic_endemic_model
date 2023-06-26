@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+#include <stdbool.h>
 #include <omp.h>
 #include "initparams.h"
 #include "helpers.h"
@@ -35,7 +36,6 @@ double poisson_draw(gsl_rng *r,double mu, double max_value){
 
 void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,int setting, int vax_percent){
     FILE *fptr = fopen(fileName,"w");
-    double age_based_coverage[p.AGES];
     srand(time(NULL));
     gsl_rng *r;
     const gsl_rng_type *T;
@@ -45,6 +45,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     r = gsl_rng_alloc(gsl_rng_default);
     gsl_rng_set(r,value);
 
+    p.age_based_coverage = (double*) malloc(p.AGES*sizeof(double*));
     for(int i = 0; i < p.AGES; i++){
 	    p.age_based_coverage[i] = 0; 
     }
@@ -88,8 +89,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
 
 
-    fprintf(stderr,"var assignment \n");
-    fflush(stderr);
     // FILENAMES
     const char *ifr_file =  "../params/ifr.csv";
     const char *age_file =  "../params/age_coverage.csv";
@@ -218,6 +217,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     initialize_repeated_csv(p.AGES,vax_file,VC);
     initialize_repeated_csv(p.AGES,im_file,im_prop);
     initialize_repeated_csv(p.AGES,icu_file,ICU_raio);
+    initialize_repeated_csv(p.AGES,age_file,p.age_based_coverage);
     read_contact_matrices(contact_compartments, overall_file,cm_overall);
     read_contact_matrices(contact_compartments, school_file,cm_school);
     int counter = 0;
@@ -535,8 +535,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         int old_age = 10;
         bool record = false;
         float total_infec = 0; 
-        float all_infec = 0;
-        float average_age = 0;
+        float all_age = 0;
         float age_pop = 0;
         float total_age = 0;
         for(int i = 0; i < p.AGES; i++){
@@ -553,10 +552,11 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             XIV1[i] = Xvvi1[i] ;
             XI1[i] = Xsi1[i] ; 
             XD[i] = Di1[i] + DVi1[i] ; 
-            all_infec += i*I[i];
-            total_infec += I[i];
+
+            all_age = i*I1[i];
+            total_infec += I1[i];
             age_pop += i*N[i];
-            total_pop += N[i];
+            total_age += N[i];
             // 6 differnet age-categories 
             // (0-4),(5-12),(13-17),(18-49),(50-64),(65+) 
             // 0    , 1    , 2     , 3     , 4     , 5 -> age indices
@@ -604,7 +604,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
                 }
                 age_category = 5;
             }
-            incidence += Xsi[i];
+            incidence += Xsi1[i];
             protection += r1v[i] + sv[i];
             population += N[i];
             if(i == 4 || i == 12 || i == 17 || i == 49 || i == 64 || i == 84){
@@ -643,8 +643,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
     }
 
-    float average_infecage = all_age/total(I);
-    float average_age = total_pop/total(N);
+    float average_infecage = all_age/total(I1);
+    float average_age = total_age/total(N);
     float rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
     //float rt = 20.0;
     fprintf(fptr,"%d,%.2f,%d,%f,%d,Rt\n",t,vv,-90,rt,run_number);
@@ -742,6 +742,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
      }
      t += 1;
      // calculate rt-value
+    
      vv = dynamic_vv(p.age_based_coverage,N,vax_duration,vax_percent);
     }
     // now, we free all associated memory

@@ -42,7 +42,7 @@ struct ParameterSet{
      // immunity values
      double time_of_waning_natural;
      double time_of_immunity;
-     double age_based_coverage[85];
+     double* age_based_coverage;
      //  vv values + death rate
     double* vv_values;
     double* mu;
