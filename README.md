@@ -25,9 +25,9 @@ The model currently has 5 input parameters
 1. Number of runs. Larger amount will generate more stochastic simulations.
 2. Vaccine coverage level. (00,10,20,30,40,50,60,70,80,90,100)
 3. Model type. "total, "age", or "category"
-- Total saves totals of all model states
-- Age saves individuasl values of each age group for each time step (massive!) 
-- Category categorizes ages into 6 differnet age groups (0-4,5-12,13-17,18-49,50-64,65+) and saves N, Xsi, and XV 
+    - Total saves totals of all model states
+    - Age saves individuasl values of each age group for each time step (massive!) 
+    - Category categorizes ages into 6 differnet age groups (0-4,5-12,13-17,18-49,50-64,65+) and saves N, Xsi, and XV 
 4. Parameter .csv file location
 5. Folder specifying where to save files. 
 	
