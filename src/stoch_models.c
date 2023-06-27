@@ -539,7 +539,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         float age_pop = 0;
         float total_age = 0;
         for(int i = 0; i < p.AGES; i++){
-            
             S[i] = S[i] + Vs[i] + omega1[i] + omega2[i]  - Xsi1[i] - sv[i]  + IS[i];
             I1[i] = I1[i] + Xsi1[i] - Y1[i] - theta1[i] - Di1[i]  + II1[i];
             R1[i]  = R1[i] + Y1[i] + Yh1r1[i] - r1v[i] - omega1[i] + IR1[i];
@@ -553,10 +552,10 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             XI1[i] = Xsi1[i] ; 
             XD[i] = Di1[i] + DVi1[i] ; 
 
-            all_age = i*I1[i];
+            all_age += i*I1[i];
             total_infec += I1[i];
             age_pop += i*N[i];
-            total_age += N[i];
+            total_age += i*N[i];
             // 6 differnet age-categories 
             // (0-4),(5-12),(13-17),(18-49),(50-64),(65+) 
             // 0    , 1    , 2     , 3     , 4     , 5 -> age indices
@@ -616,14 +615,9 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
           fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,i,N[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,S\n",t,vv,i,S[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,I1\n",t,vv,i,I1[i],run_number);
-          //fprintf(fptr,"%d,%.2f,%d,%f,%d,I2\n",t,vv,i,I2[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,R1\n",t,vv,i,R1[i],run_number);
-          //fprintf(fptr,"%d,%.2f,%d,%f,%d,R2\n",t,vv,i,R2[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,V\n",t,vv,i,V[i],run_number);
-          //fprintf(fptr,"%d,%.2f,%d,%f,%d,XIVI1\n",t,vv,i,XIV1[i],run_number);
-          //fprintf(fptr,"%d,%.2f,%d,%f,%d,XIV2\n",t,vv,i,XIV2[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi1\n",t,vv,i,Xsi1[i],run_number);
-          //fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi2\n",t,vv,i,Xsi2[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,D\n",t,vv,i,D[i],run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,lambda\n",t,vv,i,lambdaVals[i],run_number);
         }
@@ -634,6 +628,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
           fprintf(fptr,"%d,%.2f,%d,%f,%d,XD\n",t,vv,i,XD[i],run_number);
         }
         // Storing data based on age category
+        //fprintf(stderr,"MODEL SETTING IS: %d \n",setting);
+        //fflush(stderr);
         if(setting == 3 && record == true){
           fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,age_category,population,run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi1\n",t,vv,age_category,incidence,run_number);
@@ -668,7 +664,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     
     
      total_lambda = 0;
-     // vv = dynamic_vv()
      //zero out all transitions
      for(int c = 0; c < p.AGES; c++){
 	     XD[c] = 0; 
@@ -742,7 +737,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
      }
      t += 1;
      // calculate rt-value
-    
      vv = dynamic_vv(p.age_based_coverage,N,vax_duration,vax_percent);
     }
     // now, we free all associated memory

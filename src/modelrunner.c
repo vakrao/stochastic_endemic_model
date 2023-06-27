@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
     pthread_t threads[NTHREADS];
     int thread_args[NTHREADS];
     int rc,i;
-    if(argc != 6){
+    if(argc != 7){
         printf("Missing parameters!");
         return 0;
     }
@@ -30,24 +30,27 @@ int main(int argc, char* argv[]){
     struct ParameterSet p;
     char* file_name = (char*)malloc(sizeof(char)*2000);
     char* folder_string = (char*)malloc(sizeof(char)*2000);
-    char* folder_type = (char*)malloc(sizeof(char)*2000);
+    char* model_string = (char*)malloc(sizeof(char)*3000);
+    char* run_type = (char*)malloc(sizeof(char)*3000);
     int run_number = atoi(argv[1]);
     int percent_number = atoi(argv[2]);
     int vv_index = percent_number/10;
     int model_type = 10;
-    folder_type = argv[3];
+    model_string = argv[3];
     file_name = argv[4];
     folder_string = argv[5];
+    run_type = argv[6];
+
     initialize_named_params(file_name,&p);
     p.vv_values = initialize_unique_csv(11,vv_title,p.vv_values);
     time_t seconds;
-    if (folder_type== "age"){
+    if (strcmp(model_string,"age") == 0){
         model_type = 0;
     }
-    if (folder_type== "totals"){
-       model_type = 2;
+    if (strcmp(model_string,"totals") == 0){
+        model_type = 2;
     }
-    if (folder_type== "category"){
+    if (strcmp(model_string,"category") == 0){
         model_type = 3;
     }
 
@@ -85,14 +88,13 @@ int main(int argc, char* argv[]){
 
     //Running each vaccine percentage for number given by sim_number
     for(int j = 0; j < run_number; j++){
-       new_file = generate_names(vax_percent,j+1,folder_string);
+       new_file = generate_names(vax_percent,j+1,folder_string,run_type);
       // stoch_model takes in a vv_value, iteration number, file_name to write to, parameters, and 
       // result format
       // model_type 0 -> ages and all data
       // model_type 1 -> ages and lessened data 
       // model_type 2 -> age-agnostic data
       // model_type 3 -> age category, average age
-//       stoch_model(p.vv_values[vv_index],j+1,"mod_birth.csv",p,model_type,percent_number);
        stoch_model(p.vv_values[vv_index],j+1,new_file,p,model_type,percent_number);
 	   free(new_file);
 	   new_file = (char*)malloc(sizeof(char)*90);
