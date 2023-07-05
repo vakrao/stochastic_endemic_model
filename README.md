@@ -33,6 +33,15 @@ The model currently has 5 input parameters
 	
 `srun $RUNS $COVERAGE $MODELTYPE $PARAMETERS $FOLDER`
 
+## Age groups
+We use 6 different age groups to represent the differnet age groups
+0-4 - Infants
+5-12 - Child
+13-17 - Teen
+18-49 - Adult
+50-64 - Older Adult
+65+ - Senior
+Age categories come CDC study on Flu Vaccine, 2022 (https://www.cdc.gov/flu/fluvaxview/coverage-2022estimates.html)
 ## Acknowledgements
 - Co-collaborator: Seth Edmunds
 - PIs: Marco Ajelli, Maria Litvinova 
