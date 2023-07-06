@@ -496,7 +496,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             // Recovered Exit Logic to Susceptible
             omega1[i] = poisson_draw(r,R1[i]*(1/p.time_of_waning_natural),R1[i]);
 
-	    //Recovered One transitions
+	        // Recovered One transitions
             if(R1[i] - omega1[i]>= 1){
                 temp_transition = R1[i] - omega1[i];
                 r1v[i] = poisson_draw(r,temp_transition*psi[t]*p.age_based_coverage[i],temp_transition);
@@ -648,15 +648,15 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     fprintf(fptr,"%d,%.2f,%d,%f,%d,AverageAge\n",t,vv,-90,average_age,run_number);
   
     if(setting == 2){
-            //Total Age Agnostic data-saving
+          //Total Age Agnostic data-saving
           fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,90,total(N),run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,S\n",t,vv,90,total(S),run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,I1\n",t,vv,90,total(I1),run_number);
-            fprintf(fptr,"%d,%.2f,%d,%f,%d,R1\n",t,vv,90,total(R1),run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,R1\n",t,vv,90,total(R1),run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,R2\n",t,vv,90,total(R2),run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,XIVI1\n",t,vv,90,total(XIV1),run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,XIV2\n",t,vv,90,total(XIV2),run_number);
-           fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi1\n",t,vv,90,total(Xsi1),run_number);
+          fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi1\n",t,vv,90,total(Xsi1),run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,D\n",t,vv,90,total(D),run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,VR1\n",t,vv,90,total(VR1),run_number);
           fprintf(fptr,"%d,%.2f,%d,%f,%d,V\n",t,vv,90,total(V),run_number);
@@ -737,7 +737,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
      }
      t += 1;
      // calculate rt-value
-     vv = dynamic_vv(p.age_based_coverage,N,vax_duration,vax_percent);
+//     vv = dynamic_vv(p.age_based_coverage,N,vax_duration,vax_percent);
     }
     // now, we free all associated memory
     //free(p);
