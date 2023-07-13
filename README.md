@@ -32,7 +32,7 @@ The model currently has 5 input parameters
 5. $FOLDER = Folder specifying where to save files.
 6. $TITLE = String used to specify title of raw files
 	
-`srun $RUNS $COVERAGE $MODELTYPE $PARAMETERS $FOLDER`
+`srun $RUNS $COVERAGE $MODELTYPE $PARAMETERS $FOLDER $TITLE`
 
 ## Age groups
 We use 6 different age groups to represent the differnet age groups
