@@ -102,7 +102,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     int psi_counter = 0;
     int perm_unvax_period = p.school_spring + p.school_break;
     int perm_vax_period = perm_unvax_period + p.perm_vax_seas_dur;
-    fprintf(fptr,"t,vv,age,value,sim_number,vartype\n");
+    fprintf(fptr,"t,covg_level,age,value,sim_number,vartype\n");
     // vaccine seasonaity loop
     for(int i = 0; i < p.years; i++){
         for(int j = 0; j < 365; j++){
@@ -611,35 +611,35 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
 //          Age-based data-saving
         if(setting == 0){
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,i,N[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,S\n",t,vv,i,S[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,I1\n",t,vv,i,I1[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,R1\n",t,vv,i,R1[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,V\n",t,vv,i,V[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi1\n",t,vv,i,Xsi1[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,D\n",t,vv,i,D[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,lambda\n",t,vv,i,lambdaVals[i],run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,N\n",t,vax_percent,i,N[i],run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,S\n",t,vax_percent,i,S[i],run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,I1\n",t,vax_percent,i,I1[i],run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,R1\n",t,vax_percent,i,R1[i],run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,V\n",t,vax_percent,i,V[i],run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,Xsi1\n",t,vax_percent,i,Xsi1[i],run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,D\n",t,vax_percent,i,D[i],run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,lambda\n",t,vax_percent,i,lambdaVals[i],run_number);
         }
         // Storing less data for ages
         if(setting == 1){
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,i,N[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi1\n",t,vv,i,Xsi1[i],run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,XD\n",t,vv,i,XD[i],run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,N\n",t,vax_percent,i,N[i],run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,Xsi1\n",t,vax_percent,i,Xsi1[i],run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,XD\n",t,vax_percent,i,XD[i],run_number);
         }
         // Storing data based on age category
         //fprintf(stderr,"MODEL SETTING IS: %d \n",setting);
         //fflush(stderr);
         if(setting == 3 && record == true){
-          fprintf(fptr,"%d,%d,%d,%f,N\n",t,vax_percent,vv,age_category,population);
-          fprintf(fptr,"%d,%d,%d,%f,Xsi1\n",t,vax_percent,vv,age_category,incidence);
+          fprintf(fptr,"%d,%d,%d,%f,N\n",t,vax_percent,age_category,population);
+          fprintf(fptr,"%d,%d,%d,%f,Xsi1\n",t,vax_percent,age_category,incidence);
           fprintf(fptr,"%d,%d,%d,%f,XV\n",t,vax_percent,age_category,protection);
           record = false;
         }
         //debug statement here
         if(setting == 4 && record == true){
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,age_category,population,run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi1\n",t,vv,age_category,incidence,run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,XV\n",t,vv,age_category,protection,run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,N\n",t,vax_percent,age_category,population,run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,Xsi1\n",t,vax_percent,age_category,incidence,run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,XV\n",t,vax_percent,age_category,protection,run_number);
           record = false;
          } 
 
@@ -649,23 +649,23 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     double average_age = total_age/total(N);
     float rt = mod_rt_calc(S,I1,R1,V,N,M,mu,m,q1,p);
     //float rt = 20.0;
-    fprintf(fptr,"%d,%.2f,%d,%f,%d,Rt\n",t,vv,-90,rt,run_number);
-    fprintf(fptr,"%d,%.2f,%d,%f,%d,AverageInfecAge\n",t,vv,-90,average_infecage,run_number);
-    fprintf(fptr,"%d,%.2f,%d,%f,%d,AverageAge\n",t,vv,-90,average_age,run_number);
+    fprintf(fptr,"%d,%d,%d,%f,%d,Rt\n",t,vax_percent,-90,rt,run_number);
+    fprintf(fptr,"%d,%d,%d,%f,%d,AverageInfecAge\n",t,vax_percent,-90,average_infecage,run_number);
+    fprintf(fptr,"%d,%d,%d,%f,%d,AverageAge\n",t,vax_percent,-90,average_age,run_number);
   
     if(setting == 2){
             //Total Age Agnostic data-saving
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,N\n",t,vv,90,total(N),run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,S\n",t,vv,90,total(S),run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,I1\n",t,vv,90,total(I1),run_number);
-            fprintf(fptr,"%d,%.2f,%d,%f,%d,R1\n",t,vv,90,total(R1),run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,R2\n",t,vv,90,total(R2),run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,XIVI1\n",t,vv,90,total(XIV1),run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,XIV2\n",t,vv,90,total(XIV2),run_number);
-           fprintf(fptr,"%d,%.2f,%d,%f,%d,Xsi1\n",t,vv,90,total(Xsi1),run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,D\n",t,vv,90,total(D),run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,VR1\n",t,vv,90,total(VR1),run_number);
-          fprintf(fptr,"%d,%.2f,%d,%f,%d,V\n",t,vv,90,total(V),run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,N\n",t,vax_percent,90,total(N),run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,S\n",t,vax_percent,90,total(S),run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,I1\n",t,vax_percent,90,total(I1),run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,R1\n",t,vax_percent,90,total(R1),run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,R2\n",t,vax_percent,90,total(R2),run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,XIVI1\n",t,vax_percent,90,total(XIV1),run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,XIV2\n",t,vax_percent,90,total(XIV2),run_number);
+           fprintf(fptr,"%d,%d,%d,%f,%d,Xsi1\n",t,vax_percent,90,total(Xsi1),run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,D\n",t,vax_percent,90,total(D),run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,VR1\n",t,vax_percent,90,total(VR1),run_number);
+          fprintf(fptr,"%d,%d,%d,%f,%d,V\n",t,vax_percent,90,total(V),run_number);
     }
     
     
