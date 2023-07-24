@@ -264,16 +264,9 @@ double* assign_hospitalization(float ti_icu, float* ICU_ratio,int ages){
     return theta1;
 }
 
-char* generate_names(int vv_value, int type, char* folder, char* run_type,char* category){
+char* generate_names(int vv_value, int stoch_number, char* folder, char* run_type){
     char* new_string =  (char*) malloc(3000*sizeof(char));
-    char* type_string = (char*)malloc(3000*sizeof(char));
-    if(type == 0){
-        type_string = "age";
-    }
-    else{
-        type_string = "nonage";
-    }
-    sprintf(new_string,"%s/%s%s_%s0.csv",folder,type_string,category,vv_value);
+    sprintf(new_string,"%s/%s_run_%d_%d0.csv",folder,run_type,stoch_number,vv_value);
     return new_string;
 
 }

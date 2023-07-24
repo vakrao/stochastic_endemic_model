@@ -57,5 +57,5 @@ void read_contact_matrices(int list_size,const char* filename, double** lst);
 double* initialize_unique_csv(int list_size,const char* filename, double* lst);
 int initialize_named_params(const char* filename, struct ParameterSet *p);
 double* assign_hospitalization(float ti_icu, float* ICU_ratio,int ages);
-char* generate_names(int stoch_number, int vv_value, char* folder);
+char* generate_names(int stoch_number, int vv_value, char* folder,char* run_type);
 #endif

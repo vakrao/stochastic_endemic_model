@@ -7,6 +7,7 @@
 #include<time.h>
 #include<gsl/gsl_rng.h>  
 #include<pthread.h>
+#include<string.h>
 //#include<omp.h>
 
 #define NTHREADS 10
@@ -53,6 +54,9 @@ int main(int argc, char* argv[]){
     if (strcmp(model_string,"category") == 0){
         model_type = 3;
     }
+    if (strcmp(model_string,"debug") == 0){
+        model_type = 4;
+    }
 
     // initializes psi, the vaccine coverage variable 
     // based on vaccinating more individuals in the first 
@@ -86,23 +90,16 @@ int main(int argc, char* argv[]){
     read_contact_matrices(17, overall_file,p.M);
     raw_N0 = initialize_unique_csv(p.AGES,n_file,raw_N0);
 
-    age_file = generate_names(vax_percent,0,folder_string,run_type);
-    nonage_file = generate_names(vax_percent,1,folder_string,run_type);
-    FILE *agefptr = fopen(agefptr,"w");
-    FILE *nonagefptr = fopen(nonage_file,"w");
-    if(category == 3){
-        fprintf(fptr,"t,vv,age,N,XV,XI,\n");
-    }
-    fprintf(agefptr,
     //Running each vaccine percentage for number given by sim_number
     for(int j = 0; j < run_number; j++){
+       new_file = generate_names(vax_percent,j+1,folder_string,run_type);
       // stoch_model takes in a vv_value, iteration number, file_name to write to, parameters, and 
       // result format
       // model_type 0 -> ages and all data
       // model_type 1 -> ages and lessened data 
       // model_type 2 -> age-agnostic data
       // model_type 3 -> age category, average age
-       stoch_model(p.vv_values[vv_index],j+1,nonage_file,age_file,p,model_type,percent_number);
+       stoch_model(p.vv_values[vv_index],j+1,new_file,p,model_type,percent_number);
 	   free(new_file);
 	   new_file = (char*)malloc(sizeof(char)*90);
      } 

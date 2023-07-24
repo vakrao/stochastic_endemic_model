@@ -78,11 +78,12 @@ float q_calc(double* S,double* I,double* R,double* V, double* N,double** M,doubl
     gsl_vector_set_zero(ev);
     gsl_eigen_symm(K, ev, w);
     gsl_eigen_symm_free(w);
-    fprintf(stderr,"R0: %d",R0);
-    fflush(stderr);
     float q = R0/gsl_vector_max(ev); 
-    fprintf(stderr,"Q: %lf",q);
-    fflush(stderr);
+    gsl_matrix_free(FL);
+    gsl_matrix_free(G);
+    gsl_matrix_free(K);
+    gsl_vector_free(ev);
+    gsl_matrix_free(inv);
     return q;
 }
 float mod_rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,double* mu, double* m,double q1,struct ParameterSet p){
@@ -158,6 +159,7 @@ float mod_rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,
     gsl_matrix_free(K);
     gsl_matrix_free(inv);
     gsl_eigen_symm_free(w);
+    gsl_vector_free(ev);
    
     return rt;
 }
