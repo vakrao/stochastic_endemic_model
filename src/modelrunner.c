@@ -75,7 +75,6 @@ int main(int argc, char* argv[]){
 
     const char *ifr_file =  "../params/ifr.csv";
     const char *vax_file =  "../params/dailyvax.csv";
-    const char *m_file =  "../params/new_mort.csv";
     const char *n_file = "../params/us_pop.csv";
     const char *im_file = "../params/immigration_prop.csv";
     const char *overall_file = "../params/overall_17_contacts.csv";

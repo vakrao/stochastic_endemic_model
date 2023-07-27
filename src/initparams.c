@@ -196,7 +196,6 @@ int initialize_named_params(const char* filename,struct ParameterSet *p){
         }
         if(counter == 19){
             value = atof(strtok(NULL, ","));
-            p->b = value;
         }
         if(counter == 20){ 
             value = atof(strtok(NULL, ","));

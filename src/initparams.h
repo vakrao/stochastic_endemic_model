@@ -48,8 +48,9 @@ struct ParameterSet{
     double* mu;
     double* m;
     double** M;
-    double b; 
     double IFR_mod;
+    char* b_file;
+    char* m_file;
 };
 extern struct ParameterSet p;
 void initialize_repeated_csv(int list_size,const char* filename, double* lst);

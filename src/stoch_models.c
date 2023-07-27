@@ -95,7 +95,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     const char *age_file =  "../params/age_coverage.csv";
     const char *vax_file =  "../params/dailyvax.csv";
     const char *m_file =  "../params/daily_m.csv";
-    const char *b_file = p.birth_file;
+    const char *b_file = p.b_file;
     const char *n_file = "../params/us_pop.csv";
     const char *im_file = "../params/immigration_prop.csv";
     const char *overall_file = "../params/overall_17_contacts.csv";
