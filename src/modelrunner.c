@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
     pthread_t threads[NTHREADS];
     int thread_args[NTHREADS];
     int rc,i;
-    if(argc != 7){
+    if(argv != 9){
         printf("Missing parameters!");
         return 0;
     }
@@ -32,6 +32,8 @@ int main(int argc, char* argv[]){
     char* file_name = (char*)malloc(sizeof(char)*2000);
     char* folder_string = (char*)malloc(sizeof(char)*2000);
     char* model_string = (char*)malloc(sizeof(char)*3000);
+    char* m_file = (char*)malloc(sizeof(char)*3000);
+    char* b_file = (char*)malloc(sizeof(char)*3000);
     char* run_type = (char*)malloc(sizeof(char)*3000);
     int run_number = atoi(argv[1]);
     int percent_number = atoi(argv[2]);
@@ -41,6 +43,8 @@ int main(int argc, char* argv[]){
     file_name = argv[4];
     folder_string = argv[5];
     run_type = argv[6];
+    m_file = argv[7]; 
+    b_file = argv[8];
 
     initialize_named_params(file_name,&p);
     p.vv_values = initialize_unique_csv(11,vv_title,p.vv_values);
@@ -81,6 +85,10 @@ int main(int argc, char* argv[]){
     p.m = (double*) malloc(p.AGES * sizeof(double));
     p.mu = (double*) malloc(p.AGES * sizeof(double));
     p.M = (double**) malloc(17 * sizeof(double*));
+    p.m_file = (char*) malloc(2000*sizeof(char*));
+    p.b_file = (char*) malloc(2000*sizeof(char*));
+    p.m_file = m_file;
+    p.b_file = b_file;
     raw_N0 = initialize_unique_csv(p.AGES,n_file,raw_N0);
     for(i=0;i<p.AGES;i++){
         p.N0 += raw_N0[i];

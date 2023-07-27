@@ -55,6 +55,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     int vax_duration = 0;
     // ALL COMPARTMENTS
     double* m = (double*) malloc(p.AGES * sizeof(double));
+    double* b = (double*) malloc(p.years * sizeof(double));
     double** cm_school = (double**) malloc(contact_compartments* sizeof(double*));
     double** cm_overall = (double**) malloc(contact_compartments* sizeof(double*));
     double** M = (double**) malloc(contact_compartments * sizeof(double*));
@@ -94,6 +95,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     const char *age_file =  "../params/age_coverage.csv";
     const char *vax_file =  "../params/dailyvax.csv";
     const char *m_file =  "../params/daily_m.csv";
+    const char *b_file = p.birth_file;
     const char *n_file = "../params/us_pop.csv";
     const char *im_file = "../params/immigration_prop.csv";
     const char *overall_file = "../params/overall_17_contacts.csv";
@@ -212,8 +214,9 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
     // Initilizaing large datasets
     mu= initialize_unique_csv(p.AGES,ifr_file,mu);
-    m = initialize_unique_csv(p.AGES,m_file,m);
+    m = initialize_unique_csv(p.AGES,p.m_file,m);
     N = initialize_unique_csv(p.AGES,n_file,N);
+    b = initialize_unique_csv(p.years,p.b_file,b);
     initialize_repeated_csv(p.AGES,vax_file,VC);
     initialize_repeated_csv(p.AGES,im_file,im_prop);
     initialize_repeated_csv(p.AGES,icu_file,ICU_raio);
@@ -232,7 +235,9 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         year_val = (p.age_based_coverage[i]*vv)/365.0;
         p.age_based_coverage[i] = year_val;
     }
-
+    for(int i =0; i < p.years; i++){
+        b[i] = b[i]/365.0;
+    }
     p.N0 = NO;
     // initializing contact matrix
     for(int k = 0; k < contact_compartments; k++){
@@ -328,6 +333,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     double total_lambda = 0;
     int rand_number = 0;
     int start = 0;
+    int year = 0;
     //Time loop starts here
     while(t < p.ft){
 	// School contact matrix control flow
@@ -345,16 +351,9 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 		        }
 	        }
 	    }
-        // introducing virus
-//        for(int i = 0 ; i < new_yearly_imports; i++){
-//            rand_number = rand() % p.AGES;
-//            if(S[rand_number] > 0){
-//                   S[rand_number] = S[rand_number] - 1; 
-//                   I1[rand_number] = I1[rand_number] + 1; 
-//                }
-//        }
         // Ageing Loop
         if(((t % 365 == 0)  & t > 0)){
+            year += 1;
             S = ageing(S, p);
             I1 = ageing(I1, p);
             R1= ageing(R1, p);
@@ -400,11 +399,9 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             }
        }
        // births occur  
-        double totalN = total(N);
-        if( t >= 365){
-            SB[0] = poisson_draw(r,totalN*p.b,totalN);
-            S[0] +=  SB[0];
-        }
+       double totalN = total(N);
+       SB[0] = poisson_draw(r,totalN*b[year],totalN);
+       S[0] +=  SB[0];
        // natural mortality 
        for(int i = 0; i < p.AGES; i++){
             SD[i] = poisson_draw(r,S[i]* m[i],S[i]);
@@ -549,13 +546,13 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             N[i]   = S[i] + I1[i] + R1[i] + VI1[i] + VR1[i] + V[i] + H1[i] ;
             XIV1[i] = Xvvi1[i] ;
             XI1[i] = Xsi1[i] ; 
-            XD[i] = Di1[i] + DVi1[i] ; 
+            XD[i] = Di1[i] + DVi1[i]; 
 
             all_age += i*I1[i];
             total_infec += I1[i];
             age_pop += i*N[i];
             total_age += i*N[i];
-            // 6 differnet age-categories 
+            // 6 different age-categories 
             // (0-4),(5-12),(13-17),(18-49),(50-64),(65+) 
             // 0    , 1    , 2     , 3     , 4     , 5 -> age indices
             double XV = r1v[i] + sv[i];
