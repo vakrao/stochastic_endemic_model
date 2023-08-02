@@ -1,6 +1,6 @@
 # Stochastic Endemic Model
 This repository provides the source code for a realistic age-structured epidemic model, where we compute the incidence of SARS-CoV2 cases over a span of 
-20 years. Using this model, we are interested in testing the effect that different vaccine coverage schemes will have on disease incidence. 
+20 years. Using this model, we are interested in testing the effect that different vaccine coverage schemes will have on disease incidence,as well as the effects of changing demography. 
 
 ## Getting started
 ### Prerequistes
@@ -20,7 +20,7 @@ sbatch r5_run.script '
 
 ## Creating a custom SLURM script 
 
-The model currently has 5 input parameters 
+The model currently has 8 input parameters 
 	
 1. $RUNS = Number of runs. Larger amount will generate more stochastic simulations.
 2. $COVERAGE = Vaccine coverage level. (00,10,20,30,40,50,60,70,80,90,100)
@@ -31,11 +31,13 @@ The model currently has 5 input parameters
 4. $PARAMETERS = Parameter .csv file location
 5. $FOLDER = Folder specifying where to save files.
 6. $TITLE = String used to specify title of raw files
+7. $DEATHS = Filepath to mortality dataset 
+8. $BIRTHS = Filepath to births dataset
 	
-`srun $RUNS $COVERAGE $MODELTYPE $PARAMETERS $FOLDER $TITLE`
+`srun $RUNS $COVERAGE $MODELTYPE $PARAMETERS $FOLDER $TITLE $DEATHS $BIRTHS`
 
 ## Age groups
-We use 6 different age groups to represent the differnet age groups
+We use 6 different age groups to represent the differnet age groups <br> 
 0-4 - Infants <br> 
 5-12 - Child <br>
 13-17 - Teen <br> 

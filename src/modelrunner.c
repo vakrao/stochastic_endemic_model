@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
     pthread_t threads[NTHREADS];
     int thread_args[NTHREADS];
     int rc,i;
-    if(argv != 9){
+    if(argc != 9){
         printf("Missing parameters!");
         return 0;
     }
@@ -92,13 +92,21 @@ int main(int argc, char* argv[]){
     for(i=0;i<p.AGES;i++){
         p.N0 += raw_N0[i];
     }
-    initialize_unique_csv(p.AGES,m_file,p.m);
+    fprintf(stderr,"starting to read mortality \n");
+    fflush(stderr);
+    fprintf(stderr,m_file);
+    fflush(stderr);
+    p.m = initialize_unique_csv(p.AGES,m_file,p.m);
+    fprintf(stderr,"starting to read deaths \n");
+    fflush(stderr);
     initialize_unique_csv(p.AGES,ifr_file,p.mu);
     read_contact_matrices(17, overall_file,p.M);
     raw_N0 = initialize_unique_csv(p.AGES,n_file,raw_N0);
 
     //Running each vaccine percentage for number given by sim_number
     for(int j = 0; j < run_number; j++){
+       fprintf(stderr,"begin run \n");
+       fflush(stderr);
        new_file = generate_names(vax_percent,j+1,folder_string,run_type);
       // stoch_model takes in a vv_value, iteration number, file_name to write to, parameters, and 
       // result format

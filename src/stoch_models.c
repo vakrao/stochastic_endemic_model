@@ -51,6 +51,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     }
     //assigning vaccine percentages based on age
 
+    fprintf(stderr,"REALLYH starting to read \n");
+    fflush(stderr);
     int contact_compartments = 17;
     int vax_duration = 0;
     // ALL COMPARTMENTS
@@ -91,10 +93,14 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
 
     // FILENAMES
+    fprintf(stderr,"ifr file \n");
+    fflush(stderr);
     const char *ifr_file =  "../params/ifr.csv";
     const char *age_file =  "../params/age_coverage.csv";
     const char *vax_file =  "../params/dailyvax.csv";
-    const char *m_file =  "../params/daily_m.csv";
+    const char *m_file =  "../params/m.csv";
+    fprintf(stderr,"m file");
+    fflush(stderr);
     const char *b_file = p.b_file;
     const char *n_file = "../params/us_pop.csv";
     const char *im_file = "../params/immigration_prop.csv";
@@ -133,6 +139,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             psi_counter += 1;
         }
     }
+    fprintf(stderr,"finished vaccine \n");
+    fflush(stderr);
 
 
     int t = 0;
@@ -215,6 +223,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     // Initilizaing large datasets
     mu= initialize_unique_csv(p.AGES,ifr_file,mu);
     m = initialize_unique_csv(p.AGES,p.m_file,m);
+    //m =p.m;
     N = initialize_unique_csv(p.AGES,n_file,N);
     b = initialize_unique_csv(p.years,p.b_file,b);
     initialize_repeated_csv(p.AGES,vax_file,VC);
@@ -223,6 +232,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     initialize_repeated_csv(p.AGES,age_file,p.age_based_coverage);
     read_contact_matrices(contact_compartments, overall_file,cm_overall);
     read_contact_matrices(contact_compartments, school_file,cm_school);
+    fprintf(stderr,"done read");
+    fflush(stderr);
     int counter = 0;
     int NO = 0;
     double year_val = 0;
@@ -231,12 +242,12 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
         theta[i] = 0;
         mu[i] = (mu[i] / 100.0)*p.IFR_mod;
         NO += N[i];
-        m[i] = m[i];
+        m[i] = m[i]/365.0;
         year_val = (p.age_based_coverage[i]*vv)/365.0;
         p.age_based_coverage[i] = year_val;
     }
     for(int i =0; i < p.years; i++){
-        b[i] = b[i]/365.0;
+        b[i] = (double) (b[i]);
     }
     p.N0 = NO;
     // initializing contact matrix
@@ -333,7 +344,9 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     double total_lambda = 0;
     int rand_number = 0;
     int start = 0;
-    int year = 0;
+    int y = 0;
+    fprintf(stderr,"TIME LOOOP \n");
+    fflush(stderr);
     //Time loop starts here
     while(t < p.ft){
 	// School contact matrix control flow
@@ -353,7 +366,7 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 	    }
         // Ageing Loop
         if(((t % 365 == 0)  & t > 0)){
-            year += 1;
+            y += 1;
             S = ageing(S, p);
             I1 = ageing(I1, p);
             R1= ageing(R1, p);
@@ -400,7 +413,8 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
        }
        // births occur  
        double totalN = total(N);
-       SB[0] = poisson_draw(r,totalN*b[year],totalN);
+       int maxBirths = (totalN*b[y])/365;
+       SB[0] = poisson_draw(r,maxBirths,totalN);
        S[0] +=  SB[0];
        // natural mortality 
        for(int i = 0; i < p.AGES; i++){
@@ -522,6 +536,9 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
        if(start == 0){
            start = 1;
         }
+
+       fprintf(stderr,"printing birth rate: %lf \n",b[y]);
+       fflush(stderr);
 
         double incidence = 0;
         double protection = 0; 

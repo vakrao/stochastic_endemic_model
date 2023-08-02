@@ -94,14 +94,14 @@ double* initialize_unique_csv(int list_size,const char* filename,double *lst){
     float value = 0;
     int reps = 0;
     int counter = 0;
-    double* new_lst = (double*) malloc(30*list_size*sizeof(double));
+    double* new_lst = (double*) malloc(3000*list_size*sizeof(double));
     for(int i =0; i < list_size*30;i++){
 	    new_lst[i] = 0.0; 
     }
 
-    while(fgets(line, 1024, stream)){
-	//char* new_val = (char*) malloc(sizeof(char)*1024);
-        char* new_val = strtok(line,",");
+    while(fgets(line, 2024, stream)){
+//	char* new_val = (char*) malloc(sizeof(char)*1024);
+         char* new_val = strtok(line,",");
         value = strtod(new_val,NULL);
         new_lst[counter] = (double) value;
         counter += 1;
