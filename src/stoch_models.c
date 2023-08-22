@@ -221,14 +221,15 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     int new_yearly_imports = 100;
 
     // Initilizaing large datasets
-    mu= initialize_unique_csv(p.AGES,ifr_file,mu);
-    m = initialize_unique_csv(p.AGES,p.m_file,m);
+    initialize_unique_csv(p.AGES,ifr_file,mu);
+    initialize_unique_csv(p.AGES,p.m_file,m);
     //m =p.m;
-    N = initialize_unique_csv(p.AGES,n_file,N);
-    b = initialize_unique_csv(p.years,p.b_file,b);
+    initialize_unique_csv(p.AGES,n_file,N);
+    initialize_unique_csv(p.years,p.b_file,b);
     initialize_repeated_csv(p.AGES,vax_file,VC);
     initialize_repeated_csv(p.AGES,im_file,im_prop);
     initialize_repeated_csv(p.AGES,icu_file,ICU_raio);
+    initialize_mort_csv(p.years,"../params/mortality.csv",p);
     initialize_repeated_csv(p.AGES,age_file,p.age_based_coverage);
     read_contact_matrices(contact_compartments, overall_file,cm_overall);
     read_contact_matrices(contact_compartments, school_file,cm_school);
@@ -418,12 +419,12 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
        S[0] +=  SB[0];
        // natural mortality 
        for(int i = 0; i < p.AGES; i++){
-            SD[i] = poisson_draw(r,S[i]* m[i],S[i]);
-            I1D[i] = poisson_draw(r,I1[i]*m[i],I1[i]);
-            R1D[i] = poisson_draw(r,R1[i]*m[i],R1[i]);
-            VD[i] = poisson_draw(r,V[i]*m[i],V[i]);
-            VI1D[i] = poisson_draw(r,VI1[i]*m[i],VI1[i]);
-            VR1D[i] = poisson_draw(r,VR1[i]*m[i],VR1[i]);
+            SD[i] = poisson_draw(r,S[i]* p.year_mort[year_val][i],S[i]);
+            I1D[i] = poisson_draw(r,I1[i]*p.year_mort[year_val][i],I1[i]);
+            R1D[i] = poisson_draw(r,R1[i]*p.year_mort[year_val][i],R1[i]);
+            VD[i] = poisson_draw(r,V[i]*p.year_mort[year_val][i],V[i]);
+            VI1D[i] = poisson_draw(r,VI1[i]*p.year_mort[year_val][i],VI1[i]);
+            VR1D[i] = poisson_draw(r,VR1[i]*p.year_mort[year_val][i],VR1[i]);
 //            H1D[i] = poisson_draw(r,H1[i]*m[i],temp_transition);
             S[i] = S[i] - SD[i];
             I1[i] = I1[i] - I1D[i];
@@ -537,8 +538,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
            start = 1;
         }
 
-       fprintf(stderr,"printing birth rate: %lf \n",b[y]);
-       fflush(stderr);
 
         double incidence = 0;
         double protection = 0; 
@@ -791,7 +790,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     for(int i = 0;  i < contact_compartments; i++){
         free(cm_overall[i]);
         free(cm_school[i]);
-        free(M[i]);
     }
     free(cm_school);
     free(cm_overall);

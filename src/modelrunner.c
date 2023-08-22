@@ -45,9 +45,12 @@ int main(int argc, char* argv[]){
     run_type = argv[6];
     m_file = argv[7]; 
     b_file = argv[8];
+    p.vv_values = (double*)malloc(sizeof(double)*11);
 
     initialize_named_params(file_name,&p);
-    p.vv_values = initialize_unique_csv(11,vv_title,p.vv_values);
+    fprintf(stderr,"starting to VV\n");
+    fflush(stderr);
+    initialize_unique_csv(11,vv_title,p.vv_values);
     time_t seconds;
     if (strcmp(model_string,"age") == 0){
         model_type = 0;
@@ -82,13 +85,19 @@ int main(int argc, char* argv[]){
     const char *school_file = "../params/school_17_contacts.csv";    
     double *raw_N0 = (double*) malloc(sizeof(double)*p.AGES);
     p.m = (double*) malloc(p.AGES * sizeof(double));
+    p.year_mort = (double**) malloc(p.years*sizeof(double*));
+    for(int i = 0; i < p.years; i++){
+        p.year_mort[i] = malloc(p.AGES*sizeof(double));
+    }
     p.mu = (double*) malloc(p.AGES * sizeof(double));
     p.M = (double**) malloc(17 * sizeof(double*));
     p.m_file = (char*) malloc(2000*sizeof(char*));
     p.b_file = (char*) malloc(2000*sizeof(char*));
     p.m_file = m_file;
     p.b_file = b_file;
-    raw_N0 = initialize_unique_csv(p.AGES,n_file,raw_N0);
+    fprintf(stderr,"starting to read N0 \n");
+    fflush(stderr);
+    initialize_unique_csv(p.AGES,n_file,raw_N0);
     for(i=0;i<p.AGES;i++){
         p.N0 += raw_N0[i];
     }
@@ -96,12 +105,12 @@ int main(int argc, char* argv[]){
     fflush(stderr);
     fprintf(stderr,m_file);
     fflush(stderr);
-    p.m = initialize_unique_csv(p.AGES,m_file,p.m);
+    initialize_unique_csv(p.AGES,m_file,p.m);
     fprintf(stderr,"starting to read deaths \n");
     fflush(stderr);
     initialize_unique_csv(p.AGES,ifr_file,p.mu);
     read_contact_matrices(17, overall_file,p.M);
-    raw_N0 = initialize_unique_csv(p.AGES,n_file,raw_N0);
+    initialize_unique_csv(p.AGES,n_file,raw_N0);
 
     //Running each vaccine percentage for number given by sim_number
     for(int j = 0; j < run_number; j++){
@@ -118,7 +127,16 @@ int main(int argc, char* argv[]){
 	   free(new_file);
 	   new_file = (char*)malloc(sizeof(char)*90);
      } 
-    free(p.vv_values);
+ //   free(p.vv_values);
+  //  free(p.m);
+   // free(p.mu);
+//    free(p.b_file);
+ //   free(p.m_file);
     free(dynamic_title);
     free(new_file);
+ //   free(m_file);
+//    free(b_file);
+//    for(int i = 0;  i < p.AGES; i++){
+//        free(p.M[i]);
+//    }
 }

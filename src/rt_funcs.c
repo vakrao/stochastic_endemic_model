@@ -89,6 +89,7 @@ float q_calc(double* S,double* I,double* R,double* V, double* N,double** M,doubl
 float mod_rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,double* mu, double* m,double q1,struct ParameterSet p){
     gsl_matrix *FL = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
     gsl_matrix *G = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
+    gsl_matrix *inv = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
     gsl_permutation *inv_perm = gsl_permutation_alloc(p.AGES*2);
     gsl_matrix *K = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
     gsl_matrix_set_zero(FL);
@@ -122,6 +123,7 @@ float mod_rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,
     for(int i =0; i < p.AGES; i++){
         int z = i/5;
         for(int j = 0; j < p.AGES; j++){
+            gsl_matrix_set(inv,i,j,0);
             int k = j/5;
             double pop = 0;
             double sus = 0;
@@ -142,11 +144,11 @@ float mod_rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,
         
     // take inverse now!
     gsl_linalg_LU_decomp(FL,inv_perm,&s);
-    gsl_matrix *inv = gsl_matrix_alloc(p.AGES*2,p.AGES*2);
     gsl_linalg_LU_invert(FL,inv_perm,inv);
     gsl_permutation_free(inv_perm);
     gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,inv,G,0.0,K);
     gsl_matrix_scale(K,-1.0);
+    gsl_matrix_free(inv);
 
     
     gsl_eigen_symm_workspace *w = gsl_eigen_symm_alloc(p.AGES*2);
@@ -154,12 +156,11 @@ float mod_rt_calc(double* S,double* I,double* R,double* V, double* N,double** M,
     gsl_vector_set_zero(ev);
     gsl_eigen_symm(K, ev, w);
     double rt = gsl_vector_max(ev)*q1; 
+    gsl_eigen_symm_free(w);
+    gsl_vector_free(ev);
     gsl_matrix_free(FL);
     gsl_matrix_free(G);
     gsl_matrix_free(K);
-    gsl_matrix_free(inv);
-    gsl_eigen_symm_free(w);
-    gsl_vector_free(ev);
    
     return rt;
 }

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include<gsl/gsl_rng.h>  
@@ -88,27 +89,83 @@ void read_contact_matrices(int list_size,const char* filename, double** lst){
    fclose(stream);
 }
 
-double* initialize_unique_csv(int list_size,const char* filename,double *lst){
+void initialize_unique_csv(int list_size,const char* filename,double *lst){
     FILE* stream = fopen(filename,"r");
     char line[300];
-    float value = 0;
+    double value = 0;
     int reps = 0;
     int counter = 0;
-    double* new_lst = (double*) malloc(3000*list_size*sizeof(double));
-    for(int i =0; i < list_size*30;i++){
-	    new_lst[i] = 0.0; 
+//    double* new_lst = (double*) malloc(3000*list_size*sizeof(double));
+    for(int i =0; i < list_size;i++){
+	    lst[i] = 0.0; 
     }
 
-    while(fgets(line, 2024, stream)){
-//	char* new_val = (char*) malloc(sizeof(char)*1024);
+    while(fgets(line, 1024, stream)){
          char* new_val = strtok(line,",");
-        value = strtod(new_val,NULL);
-        new_lst[counter] = (double) value;
-        counter += 1;
+         value = strtod(new_val,NULL);
+         lst[counter] = (double) value;
+         counter += 1;
     }
     fclose(stream);
-    return new_lst;
 }
+void initialize_mort_csv(int list_size,const char* filename,struct ParameterSet *p){
+    FILE* stream = fopen(filename,"r");
+    char line[1024];
+    double value = 0;
+    int reps = 0;
+    int counter = 0;
+    char* token;
+    int y = 0;
+    
+//    double* new_lst = (double*) malloc(3000*list_size*sizeof(double));
+    while(feof(stream) != true){
+
+        fgets(line,1024,stream);
+        printf("Row: %s",line);
+        token = strtok(line,",");
+ 
+        while(token != NULL){
+            if(counter == 0){
+                int y = (int)token - 2020;
+            }
+            if(counter == 1){
+                if(token == "0-5"){
+                    start = 0; 
+                    end = 5;
+                }
+                if(token == "11-39"){
+                    start = 11; 
+                    end = 39;
+                }
+                if(token == "40-59"){
+                    start = 40; 
+                    end = 59;
+                }
+                if(token == "6-10"){
+                    start = 6; 
+                    end = 10;
+                }
+                if(token == "60-84"){
+                    start = 60; 
+                    end = 84;
+                }
+                if(token == "85+"){
+                    start = 84; 
+                    end = 85;
+                }
+            }
+           if(counter == 4){
+               m = (double)token;
+           }
+        }
+        for(int i = start; i < end; i++){
+            p.year_mort[y][i] = m; 
+        }
+    }
+    fclose(stream);
+}
+
+
 
 int initialize_named_params(const char* filename,struct ParameterSet *p){
 
