@@ -75,7 +75,6 @@ int main(int argc, char* argv[]){
     int vax_percent = percent_number / 10;
     p.ft = p.years*365;
 
-
     const char *ifr_file =  "../params/ifr.csv";
     const char *vax_file =  "../params/dailyvax.csv";
     const char *n_file = "../params/us_pop.csv";
@@ -95,19 +94,11 @@ int main(int argc, char* argv[]){
     p.b_file = (char*) malloc(2000*sizeof(char*));
     p.m_file = m_file;
     p.b_file = b_file;
-    fprintf(stderr,"starting to read N0 \n");
-    fflush(stderr);
     initialize_unique_csv(p.AGES,n_file,raw_N0);
     for(i=0;i<p.AGES;i++){
         p.N0 += raw_N0[i];
     }
-    fprintf(stderr,"starting to read mortality \n");
-    fflush(stderr);
-    fprintf(stderr,m_file);
-    fflush(stderr);
     initialize_unique_csv(p.AGES,m_file,p.m);
-    fprintf(stderr,"starting to read deaths \n");
-    fflush(stderr);
     initialize_unique_csv(p.AGES,ifr_file,p.mu);
     read_contact_matrices(17, overall_file,p.M);
     initialize_unique_csv(p.AGES,n_file,raw_N0);

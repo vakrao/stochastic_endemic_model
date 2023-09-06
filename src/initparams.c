@@ -108,25 +108,35 @@ void initialize_unique_csv(int list_size,const char* filename,double *lst){
     }
     fclose(stream);
 }
-void initialize_mort_csv(int list_size,const char* filename,struct ParameterSet *p){
+void initialize_mort_csv(int list_size,const char* filename,double** year_mort){
     FILE* stream = fopen(filename,"r");
     char line[1024];
     double value = 0;
     int reps = 0;
     int counter = 0;
     char* token;
+    char* val;
     int y = 0;
+    long year = 0;
+    int start = 0;
+    int end = 0;
+    double m =0;
     
+        fprintf(stderr,"READING \n",m);
+        fflush(stderr);
 //    double* new_lst = (double*) malloc(3000*list_size*sizeof(double));
     while(feof(stream) != true){
 
         fgets(line,1024,stream);
-        printf("Row: %s",line);
         token = strtok(line,",");
  
+        counter = 0;
         while(token != NULL){
+        fprintf(stderr,"TOKEN: %s \n",token);
+        fflush(stderr);
             if(counter == 0){
-                int y = (int)token - 2020;
+                sscanf(token,"%d",&y);
+                y = y - 2020;
             }
             if(counter == 1){
                 if(token == "0-5"){
@@ -155,11 +165,13 @@ void initialize_mort_csv(int list_size,const char* filename,struct ParameterSet 
                 }
             }
            if(counter == 4){
-               m = (double)token;
+               sscanf(token,"%lf",&m);
+               for(int i = start; i < end; i++){
+                   year_mort[y][i] = m; 
+                }
            }
-        }
-        for(int i = start; i < end; i++){
-            p.year_mort[y][i] = m; 
+           counter += 1;
+           token = strtok(NULL,",");
         }
     }
     fclose(stream);

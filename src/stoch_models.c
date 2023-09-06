@@ -51,8 +51,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     }
     //assigning vaccine percentages based on age
 
-    fprintf(stderr,"REALLYH starting to read \n");
-    fflush(stderr);
     int contact_compartments = 17;
     int vax_duration = 0;
     // ALL COMPARTMENTS
@@ -93,14 +91,10 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
 
 
     // FILENAMES
-    fprintf(stderr,"ifr file \n");
-    fflush(stderr);
     const char *ifr_file =  "../params/ifr.csv";
     const char *age_file =  "../params/age_coverage.csv";
     const char *vax_file =  "../params/dailyvax.csv";
     const char *m_file =  "../params/m.csv";
-    fprintf(stderr,"m file");
-    fflush(stderr);
     const char *b_file = p.b_file;
     const char *n_file = "../params/us_pop.csv";
     const char *im_file = "../params/immigration_prop.csv";
@@ -139,8 +133,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
             psi_counter += 1;
         }
     }
-    fprintf(stderr,"finished vaccine \n");
-    fflush(stderr);
 
 
     int t = 0;
@@ -229,12 +221,10 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     initialize_repeated_csv(p.AGES,vax_file,VC);
     initialize_repeated_csv(p.AGES,im_file,im_prop);
     initialize_repeated_csv(p.AGES,icu_file,ICU_raio);
-    initialize_mort_csv(p.years,"../params/mortality.csv",p);
+    initialize_mort_csv(p.years,"../params/mortality.csv",p.year_mort);
     initialize_repeated_csv(p.AGES,age_file,p.age_based_coverage);
     read_contact_matrices(contact_compartments, overall_file,cm_overall);
     read_contact_matrices(contact_compartments, school_file,cm_school);
-    fprintf(stderr,"done read");
-    fflush(stderr);
     int counter = 0;
     int NO = 0;
     double year_val = 0;
@@ -346,8 +336,6 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
     int rand_number = 0;
     int start = 0;
     int y = 0;
-    fprintf(stderr,"TIME LOOOP \n");
-    fflush(stderr);
     //Time loop starts here
     while(t < p.ft){
 	// School contact matrix control flow
@@ -418,13 +406,14 @@ void stoch_model(double vv, int run_number,char* fileName,struct ParameterSet p,
        SB[0] = poisson_draw(r,maxBirths,totalN);
        S[0] +=  SB[0];
        // natural mortality 
+       int years = t/365;
        for(int i = 0; i < p.AGES; i++){
-            SD[i] = poisson_draw(r,S[i]* p.year_mort[year_val][i],S[i]);
-            I1D[i] = poisson_draw(r,I1[i]*p.year_mort[year_val][i],I1[i]);
-            R1D[i] = poisson_draw(r,R1[i]*p.year_mort[year_val][i],R1[i]);
-            VD[i] = poisson_draw(r,V[i]*p.year_mort[year_val][i],V[i]);
-            VI1D[i] = poisson_draw(r,VI1[i]*p.year_mort[year_val][i],VI1[i]);
-            VR1D[i] = poisson_draw(r,VR1[i]*p.year_mort[year_val][i],VR1[i]);
+            SD[i] = poisson_draw(r,S[i]* p.year_mort[years][i],S[i]);
+            I1D[i] = poisson_draw(r,I1[i]*p.year_mort[years][i],I1[i]);
+            R1D[i] = poisson_draw(r,R1[i]*p.year_mort[years][i],R1[i]);
+            VD[i] = poisson_draw(r,V[i]*p.year_mort[years][i],V[i]);
+            VI1D[i] = poisson_draw(r,VI1[i]*p.year_mort[years][i],VI1[i]);
+            VR1D[i] = poisson_draw(r,VR1[i]*p.year_mort[years][i],VR1[i]);
 //            H1D[i] = poisson_draw(r,H1[i]*m[i],temp_transition);
             S[i] = S[i] - SD[i];
             I1[i] = I1[i] - I1D[i];
